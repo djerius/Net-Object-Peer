@@ -1,0 +1,64 @@
+#PODNAME: Net::Object::Peer::Cookbook
+#ABSTRACT: Recipes for Net::Object::Peer
+
+# COPYRIGHT
+
+=head1 RECIPES
+
+=head2 Loop Detection
+
+In a situation where an event handler may itself emit an event it's
+possible to generate event loops.
+
+Here's a node class which accepts a single class of event. When a node
+receives an event, it also emits the same event.
+
+The event handler has a loop detector which will bail if the handler
+processes an event from an emitter more than once while the handler is
+itself emitting the event.
+
+ # examples/Loop.pm
+# EXAMPLE: examples/Loop.pm
+
+
+Now, let's set up a loop:
+
+ # examples/loop.pl
+# EXAMPLE: examples/loop.pl
+
+And the result:
+
+ % perl examples/loop.pl Loop
+# COMMAND: perl -Ilib examples/loop.pl Loop
+
+To protect all event handlers, we can modify
+L<build_sub|Net::Object::Peer/build_sub> so that it adds loop
+detection to every handler.  Here's a first attempt, which wraps
+the standard event handler in a subroutine:
+
+ # examples/LoopWrap.pm
+# EXAMPLE: examples/LoopWrap.pm
+
+And the result:
+
+ % perl examples/loop.pl LoopWrap
+# COMMAND: perl -Ilib examples/loop.pl LoopWrap
+
+Here's an alternative, taking advantage of the fact that
+L<build_sub|Net::Object::Peer/build_sub> returns a coderef generated
+by L<Sub::Quote/quote_sub>, so our loop detection code can be inlined
+directly into the event handler. Note that L<Sub::Quote> keeps
+I<copies> of the values referenced in C<%capture>, so handling of
+references to objects are slightly complicated.  C<$self> is weakened
+to avoid memory leaks, but copies of references turn into strong
+references, so instead a I<reference> to the weakened reference is
+passed.
+
+ # examples/LoopQuote.pm
+# EXAMPLE: examples/LoopQuote.pm
+
+And the result:
+
+ % perl examples/loop.pl LoopQuote
+# COMMAND: perl -Ilib examples/loop.pl LoopQuote
+
