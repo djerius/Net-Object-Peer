@@ -1,7 +1,8 @@
 requires "Beam::Emitter" => "1.005";
 requires "BeamX::Peer::Emitter" => "0";
 requires "BeamX::Peer::Listener" => "0";
-requires "List::Util" => "0";
+requires "Data::OptList" => "0";
+requires "List::Util" => "1.33";
 requires "Moo" => "0";
 requires "MooX::ProtectedAttributes" => "0";
 requires "Ref::Util" => "0";
@@ -66,6 +67,7 @@ on 'develop' => sub {
   requires "Dist::Zilla::Plugin::Test::ReportPrereqs" => "0";
   requires "Dist::Zilla::PluginBundle::Basic" => "0";
   requires "Dist::Zilla::PluginBundle::Filter" => "0";
+  requires "MooX::ClassAttribute" => "0";
   requires "Pod::Coverage::TrustPod" => "0";
   requires "Software::License::GPL_3" => "0";
   requires "Test::CPAN::Changes" => "0";
