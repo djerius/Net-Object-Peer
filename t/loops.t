@@ -4,7 +4,8 @@ use Test2::Bundle::Extended;
 
 use Moo::Role ();
 
-package Loop {
+{
+    package Loop;
 
     use Carp;
 
@@ -44,7 +45,8 @@ subtest 'loops' => sub {
 };
 
 
-package LoopSafe {
+{
+    package LoopSafe;
 
     use Carp;
 

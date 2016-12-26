@@ -4,8 +4,6 @@ use 5.10.0;
 use strict;
 use warnings;
 
-use DDP;
-
 use Test2::Bundle::Extended;
 
 use Net::Object::Peer;
@@ -49,7 +47,8 @@ sub cmp_expected (&@) {
 
 }
 
-package Node {
+{
+    package Node;
 
     use Moo;
 
