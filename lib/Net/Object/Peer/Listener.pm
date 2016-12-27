@@ -17,6 +17,7 @@ extends 'BeamX::Peer::Listener';
 has +peer => (
     is  => 'ro',
     isa => ConsumerOf ['Net::Object::Peer'],
+    weak_ref => 1,
 );
 
 1;
