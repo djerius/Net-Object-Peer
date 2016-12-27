@@ -21,39 +21,9 @@ use Test2::API qw[ context ];
 
     use Moo;
     with 'Net::Object::Peer';
+    with 'MyTest::Role::Log';
+    with 'MyTest::Role::Node';
 
-    has name => ( is => 'ro', required => 1 );
-    has logger => ( is => 'ro', isa => InstanceOf ['MyTest::Logger'] );
-
-    sub _event {
-        my $up = shift || 2;
-        my $caller = ( caller( $up ) )[3];
-        $caller =~ s/@{[__PACKAGE__]}::_(cb_|)//;
-        return $caller;
-    }
-
-    sub logit {
-
-        my $self = shift;
-
-        $self->logger->log( {
-            event => _event(),
-            self  => $self->name,
-            @_
-        } );
-    }
-
-
-    sub _notify_subscribed {
-
-        my ( $self, $peer, @names ) = @_;
-
-        $self->logit(
-            peer => $peer->name,
-            what => ( @names > 1 ? \@names : $names[0] ),
-        );
-
-    }
 
     sub _cb_changed {
 
@@ -72,25 +42,6 @@ use Test2::API qw[ context ];
         return;
     }
 
-    sub _cb_unsubscribe {
-
-        my ( $self, $event ) = @_;
-
-        if ( $event->isa( 'Net::Object::Peer::UnsubscribeEvent' ) ) {
-
-            $self->logit(
-                peer   => $event->emitter->name,
-                events => $event->event_names,
-            );
-        }
-
-        else {
-
-            $self->logit( peer => $event->emitter->name );
-
-        }
-
-    }
 
 }
 
