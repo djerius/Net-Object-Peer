@@ -4,57 +4,26 @@ use 5.10.0;
 use strict;
 use warnings;
 
+use Test::Lib;
 use Test2::Bundle::Extended;
+use MyTest::Common;
+use MyTest::Logger;
 
 use Net::Object::Peer;
 
-my @got;
-my @expected;
-
 use Test2::API qw[ context ];
 
-sub cmp_expected (&@) {
-
-    my ( $sub, @expected ) = @_;
-
-    my $ctx = context();
-
-    @got = ();
-    $sub->();
-
-
-    my $ok = 0;
-
-    my $n = @got > @expected ? @got : @expected;
-
-    for my $idx ( 0 .. $n - 1 ) {
-
-        my $got      = $got[$idx];
-        my $expected = $expected[$idx];
-
-        my @label = (
-            "self: $expected->{self}",
-            ( exists $expected->{peer} ? "peer: $expected->{peer}" : () ),
-            "event: $expected->{event}"
-        );
-
-        $ok += 0 + is( $got, $expected, join( '; ', @label ) );
-    }
-
-    $ctx->release;
-
-    return $ok == $n;
-
-}
 
 {
     package Node;
 
-    use Moo;
+    use Types::Standard 'InstanceOf';
 
+    use Moo;
     with 'Net::Object::Peer';
 
     has name => ( is => 'ro', required => 1 );
+    has logger => ( is => 'ro', isa => InstanceOf ['MyTest::Logger'] );
 
     sub _event {
         my $up = shift || 2;
@@ -67,12 +36,11 @@ sub cmp_expected (&@) {
 
         my $self = shift;
 
-        push @got,
-          {
+        $self->logger->log( {
             event => _event(),
             self  => $self->name,
             @_
-          };
+        } );
     }
 
 
@@ -128,14 +96,15 @@ sub cmp_expected (&@) {
 
 subtest "unsubscribe all" => sub {
 
-    @got = @expected = ();
+    my $logger = MyTest::Logger->new;
 
-    my $n1 = Node->new( name => 'N1' );
-    my $n2 = Node->new( name => 'N2' );
-    my $n3 = Node->new( name => 'N3' );
+    my $n1 = Node->new( name => 'N1', logger => $logger );
+    my $n2 = Node->new( name => 'N2', logger => $logger  );
+    my $n3 = Node->new( name => 'N3', logger => $logger  );
 
 
     cmp_expected { $n2->subscribe( $n1, 'echo', 'changed' ) }
+    $logger,
     {
         event => "notify_subscribed",
         self  => "N1",
@@ -146,6 +115,7 @@ subtest "unsubscribe all" => sub {
     cmp_expected {
         $n3->subscribe( $n1, 'echo' )
     }
+    $logger,
     {
         event => "notify_subscribed",
         self  => "N1",
@@ -154,6 +124,7 @@ subtest "unsubscribe all" => sub {
     };
 
     cmp_expected { $n1->emit_args( echo => qw[ hello there ] ) }
+    $logger,
     {
         event => "echo",
         self  => "N2",
@@ -167,6 +138,7 @@ subtest "unsubscribe all" => sub {
 
     # subscribe n2 to another object (n3)
     cmp_expected { $n2->subscribe( $n3, 'changed' ) }
+    $logger,
     {
         event => "notify_subscribed",
         self  => "N3",
@@ -176,18 +148,24 @@ subtest "unsubscribe all" => sub {
 
     # and check that
     cmp_expected { $n3->emit( 'changed' ) }
+    $logger,
     {
         event => "changed",
         self  => "N2",
         peer  => "N3",
     };
 
-    cmp_expected { $n2->unsubscribe };
+    cmp_expected { $n2->unsubscribe }
+    $logger,
+    ;
 
     # no output from n2
-    cmp_expected { $n3->emit( 'changed' ) };
+    cmp_expected { $n3->emit( 'changed' ) }
+    $logger,
+    ;
 
     cmp_expected { $n1->emit_args( echo => qw[ hello there ] ) }
+    $logger,
     # no output from n2
     {
         event => "echo",
@@ -200,299 +178,351 @@ subtest "unsubscribe all" => sub {
 
 subtest "unsubscribe from events" => sub {
 
-    @got = @expected = ();
+    my $logger = MyTest::Logger->new;
 
-    my $n1 = Node->new( name => 'N1' );
-    my $n2 = Node->new( name => 'N2' );
-    my $n3 = Node->new( name => 'N3' );
+    my $n1 = Node->new( name => 'N1', logger => $logger );
+    my $n2 = Node->new( name => 'N2', logger => $logger  );
+    my $n3 = Node->new( name => 'N3', logger => $logger  );
 
     # n3 follows both n1 and n2, events echo & changed
     cmp_expected { $n3->subscribe( $n1, 'echo', 'changed' ) }
-      {
+    $logger,
+    {
         event => "notify_subscribed",
         self  => "N1",
         peer  => "N3",
         what  => [ "echo", "changed" ],
-      };
+    };
 
     cmp_expected { $n3->subscribe( $n2, 'echo', 'changed' ) }
-      {
+    $logger,
+    {
         event => "notify_subscribed",
         self  => "N2",
         peer  => "N3",
         what  => [ "echo", "changed" ],
-      };
+    };
 
     # check things work
     cmp_expected { $n1->emit( 'changed' ) }
-      {
+    $logger,
+    {
         event => "changed",
         self  => "N3",
         peer  => "N1",
-      };
+    };
 
     cmp_expected { $n2->emit( 'changed' ) }
-      {
+    $logger,
+    {
         event => "changed",
         self  => "N3",
         peer  => "N2",
-      };
+    };
 
     cmp_expected { $n1->emit_args( echo => qw[ hello there ] ) }
-      {
+    $logger,
+    {
         event => "echo",
         self  => "N3",
         args  => [qw[ hello there ]],
-      };
+    };
 
     cmp_expected { $n2->emit_args( echo => qw[ hello there ] ) }
-      {
+    $logger,
+    {
         event => "echo",
         self  => "N3",
         args  => [qw[ hello there ]],
-      };
+    };
 
     # now n3 doesn't want to hear about echos from anyone
-    cmp_expected { $n3->unsubscribe( 'echo' ) };
+    cmp_expected { $n3->unsubscribe( 'echo' ) }
+    $logger,
+    ;
 
     # crickets
-    cmp_expected { $n1->emit_args( echo => qw[ hello there ] ) };
-    cmp_expected { $n2->emit_args( echo => qw[ hello there ] ) };
+    cmp_expected { $n1->emit_args( echo => qw[ hello there ] ) }
+    $logger,
+    ;
+    cmp_expected { $n2->emit_args( echo => qw[ hello there ] ) }
+    $logger,
+    ;
 
 };
 
 subtest "unsubscribe from peer" => sub {
 
-    @got = @expected = ();
+    my $logger = MyTest::Logger->new;
 
-    my $n1 = Node->new( name => 'N1' );
-    my $n2 = Node->new( name => 'N2' );
-    my $n3 = Node->new( name => 'N3' );
+    my $n1 = Node->new( name => 'N1', logger => $logger );
+    my $n2 = Node->new( name => 'N2', logger => $logger  );
+    my $n3 = Node->new( name => 'N3', logger => $logger  );
 
     # n3 follows both n1 and n2, events echo & changed
     cmp_expected { $n3->subscribe( $n1, 'echo', 'changed' ) }
-      {
+    $logger,
+    {
         event => "notify_subscribed",
         self  => "N1",
         peer  => "N3",
         what  => [ "echo", "changed" ],
-      };
+    };
 
     cmp_expected { $n3->subscribe( $n2, 'echo', 'changed' ) }
-      {
+    $logger,
+    {
         event => "notify_subscribed",
         self  => "N2",
         peer  => "N3",
         what  => [ "echo", "changed" ],
-      };
+    };
 
     # check things work
     cmp_expected { $n1->emit( 'changed' ) }
-      {
+    $logger,
+    {
         event => "changed",
         self  => "N3",
         peer  => "N1",
-      };
+    };
 
     cmp_expected { $n2->emit( 'changed' ) }
-      {
+    $logger,
+    {
         event => "changed",
         self  => "N3",
         peer  => "N2",
-      };
+    };
 
     cmp_expected { $n1->emit_args( echo => qw[ hello there ] ) }
-      {
+    $logger,
+    {
         event => "echo",
         self  => "N3",
         args  => [qw[ hello there ]],
-      };
+    };
 
     cmp_expected { $n2->emit_args( echo => qw[ hello there ] ) }
-      {
+    $logger,
+    {
         event => "echo",
         self  => "N3",
         args  => [qw[ hello there ]],
-      };
+    };
 
     # now n3 doesn't want to hear from n2
-    cmp_expected { $n3->unsubscribe( $n2 ) };
+    cmp_expected { $n3->unsubscribe( $n2 ) }
+    $logger,
+    ;
 
     # crickets
-    cmp_expected { $n2->emit( 'changed' ) };
-    cmp_expected { $n2->emit_args( echo => qw[ hello there ] ) };
+    cmp_expected { $n2->emit( 'changed' ) }
+    $logger,
+    ;
+    cmp_expected { $n2->emit_args( echo => qw[ hello there ] ) }
+    $logger,
+    ;
 
     # but hear n1 load an clear
     # check things work
     cmp_expected { $n1->emit( 'changed' ) }
-      {
+    $logger,
+    {
         event => "changed",
         self  => "N3",
         peer  => "N1",
-      };
+    };
 
     cmp_expected { $n1->emit_args( echo => qw[ hello there ] ) }
-      {
+    $logger,
+    {
         event => "echo",
         self  => "N3",
         args  => [qw[ hello there ]],
-      };
+    };
 
 };
 
 
 subtest "unsubscribe from peer's events" => sub {
 
-    @got = @expected = ();
+    my $logger = MyTest::Logger->new;
 
-    my $n1 = Node->new( name => 'N1' );
-    my $n2 = Node->new( name => 'N2' );
-    my $n3 = Node->new( name => 'N3' );
+    my $n1 = Node->new( name => 'N1', logger => $logger );
+    my $n2 = Node->new( name => 'N2', logger => $logger  );
+    my $n3 = Node->new( name => 'N3', logger => $logger  );
 
     # n3 follows both n1 and n2, events echo & changed
     cmp_expected { $n3->subscribe( $n1, 'echo', 'changed' ) }
-      {
+    $logger,
+    {
         event => "notify_subscribed",
         self  => "N1",
         peer  => "N3",
         what  => [ "echo", "changed" ],
-      };
+    };
 
     cmp_expected { $n3->subscribe( $n2, 'echo', 'changed' ) }
-      {
+    $logger,
+    {
         event => "notify_subscribed",
         self  => "N2",
         peer  => "N3",
         what  => [ "echo", "changed" ],
-      };
+    };
 
     # check things work
     cmp_expected { $n1->emit( 'changed' ) }
-      {
+    $logger,
+    {
         event => "changed",
         self  => "N3",
         peer  => "N1",
-      };
+    };
 
     cmp_expected { $n2->emit( 'changed' ) }
-      {
+    $logger,
+    {
         event => "changed",
         self  => "N3",
         peer  => "N2",
-      };
+    };
 
     cmp_expected { $n1->emit_args( echo => qw[ hello there ] ) }
-      {
+    $logger,
+    {
         event => "echo",
         self  => "N3",
         args  => [qw[ hello there ]],
-      };
+    };
 
     cmp_expected { $n2->emit_args( echo => qw[ hello there ] ) }
-      {
+    $logger,
+    {
         event => "echo",
         self  => "N3",
         args  => [qw[ hello there ]],
-      };
+    };
 
     # now n3 doesn't want to hear if n2 changed
-    cmp_expected { $n3->unsubscribe( $n2, 'changed' ) };
+    cmp_expected { $n3->unsubscribe( $n2, 'changed' ) }
+    $logger,
+    ;
 
     # crickets
-    cmp_expected { $n2->emit( 'changed' ) };
+    cmp_expected { $n2->emit( 'changed' ) }
+    $logger,
+    ;
 
     # but these still work
     cmp_expected { $n2->emit_args( echo => qw[ hello there ] ) }
-      {
+    $logger,
+    {
         event => "echo",
         self  => "N3",
         args  => [qw[ hello there ]],
-      };
+    };
 
     cmp_expected { $n1->emit( 'changed' ) }
-      {
+    $logger,
+    {
         event => "changed",
         self  => "N3",
         peer  => "N1",
-      };
+    };
 
     cmp_expected { $n1->emit_args( echo => qw[ hello there ] ) }
-      {
+    $logger,
+    {
         event => "echo",
         self  => "N3",
         args  => [qw[ hello there ]],
-      };
+    };
 
     # now add changed back,
     cmp_expected { $n3->subscribe( $n2, 'changed' ) }
-      {
+    $logger,
+    {
         event => "notify_subscribed",
         self  => "N2",
         peer  => "N3",
         what  => "changed",
-      };
+    };
 
     # check if it still works
     cmp_expected { $n2->emit( 'changed' ) }
-      {
+    $logger,
+    {
         event => "changed",
         self  => "N3",
         peer  => "N2",
-      };
+    };
 
 
     # now n3 doesn't want to hear either event.
     # list them explicitly
-    cmp_expected { $n3->unsubscribe( $n2, 'changed', 'echo' ) };
+    cmp_expected { $n3->unsubscribe( $n2, 'changed', 'echo' ) }
+    $logger,
+    ;
 
     # crickets
-    cmp_expected { $n2->emit( 'changed' ) };
-    cmp_expected { $n2->emit_args( echo => qw[ hello there ] ) };
+    cmp_expected { $n2->emit( 'changed' ) }
+    $logger,
+    ;
+    cmp_expected { $n2->emit_args( echo => qw[ hello there ] ) }
+    $logger,
+    ;
 
     # but these still work
     cmp_expected { $n1->emit( 'changed' ) }
-      {
+    $logger,
+    {
         event => "changed",
         self  => "N3",
         peer  => "N1",
-      };
+    };
 
     cmp_expected { $n1->emit_args( echo => qw[ hello there ] ) }
-      {
+    $logger,
+    {
         event => "echo",
         self  => "N3",
         args  => [qw[ hello there ]],
-      };
+    };
 };
 
 subtest "weak references" => sub {
 
-    my $n1 = Node->new( name => 'N1' );
-    cmp_expected
-    {
-	my $n2 = Node->new( name => 'N2' );
-	$n1->subscribe( $n2, 'unsubscribe' );
-	$n2->subscribe( $n1, 'changed' );
-	undef $n2;
+    my $logger = MyTest::Logger->new;
+
+    my $n1 = Node->new( name => 'N1', logger => $logger );
+
+    cmp_expected {
+        my $n2 = Node->new( name => 'N2', logger => $logger );
+        $n1->subscribe( $n2, 'unsubscribe' );
+        $n2->subscribe( $n1, 'changed' );
+        undef $n2;
     }
+    $logger,
     {
-	event => 'notify_subscribed',
-	self => 'N2',
-	peer => 'N1',
-	what => 'unsubscribe',
+        event => 'notify_subscribed',
+        self  => 'N2',
+        peer  => 'N1',
+        what  => 'unsubscribe',
     },
-    {
-	event => 'notify_subscribed',
-	self => 'N1',
-	peer => 'N2',
-	what => 'changed',
-    },
-    {
-	event => 'unsubscribe',
-	events => [ '%all%' ],
-	self => 'N1',
-	peer => 'N2',
-    };
+      {
+        event => 'notify_subscribed',
+        self  => 'N1',
+        peer  => 'N2',
+        what  => 'changed',
+      },
+      {
+        event  => 'unsubscribe',
+        events => ['%all%'],
+        self   => 'N1',
+        peer   => 'N2',
+      };
 
 };
 

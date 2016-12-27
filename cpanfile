@@ -25,6 +25,7 @@ on 'test' => sub {
   requires "Test2::Bundle::Extended" => "0";
   requires "Test2::Bundle::More" => "0";
   requires "Test::API" => "0";
+  requires "Test::Lib" => "0";
   requires "Test::More" => "0";
   requires "Types::Standard" => "0";
   requires "namespace::clean" => "0";
