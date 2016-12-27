@@ -465,6 +465,36 @@ subtest "unsubscribe from peer's events" => sub {
       };
 };
 
+subtest "weak references" => sub {
+
+    my $n1 = Node->new( name => 'N1' );
+    cmp_expected
+    {
+	my $n2 = Node->new( name => 'N2' );
+	$n1->subscribe( $n2, 'unsubscribe' );
+	$n2->subscribe( $n1, 'changed' );
+	undef $n2;
+    }
+    {
+	event => 'notify_subscribed',
+	self => 'N2',
+	peer => 'N1',
+	what => 'unsubscribe',
+    },
+    {
+	event => 'notify_subscribed',
+	self => 'N1',
+	peer => 'N2',
+	what => 'changed',
+    },
+    {
+	event => 'unsubscribe',
+	events => [ '%all%' ],
+	self => 'N1',
+	peer => 'N2',
+    };
+
+};
 
 # subtest "mix it up" => sub {
 
