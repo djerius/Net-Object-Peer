@@ -2,6 +2,11 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+  [BUG FIX]
+
+     * DEMOLISH was implemented by role, rather than being modified.
+
+
 0.02      2016-12-26 17:41:04-05:00 America/New_York (TRIAL RELEASE)
 
   [BUG FIX]

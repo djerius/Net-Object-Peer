@@ -476,15 +476,20 @@ sub __cb_unsubscribe {
 
 =cut
 
-sub DEMOLISH {
+sub DEMOLISH {}
+
+around DEMOLISH => sub {
+
+    my $orig = shift;
 
     my ( $self, $in_global_destruction ) = @_;
 
-    return if $in_global_destruction;
-
     # unsubscribe from network
-    $self->unsubscribe;
-}
+    $self->unsubscribe
+	unless $in_global_destruction;
+
+    &$orig;
+};
 
 
 1;
