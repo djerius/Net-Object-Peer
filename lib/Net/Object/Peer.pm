@@ -499,14 +499,7 @@ __END__
 
 Resulting in:
 
-  N2:	peer (N2) subscribed to event changed
-  N1:	peer (N1) subscribed to event unsubscribed
-  N1:	peer (N2) changed
-  N2:	unsubscribing from all peers
-  N2:	notifying all subscribed peers of unsubscription
-  N1:	unsubscribing from all peers
-  N1:	notifying all subscribed peers of unsubscription
-
+# COMMAND: perl -Ilib examples/synopsis.pl
 
 =head1 DESCRIPTION
 
@@ -548,7 +541,7 @@ L</emit> or L</send> methods,
 
   $emitter->emit( $event_name );
 
- the event handler will be invoked as
+the event handler will be invoked as
 
   $subscriber->method( $event );
 
