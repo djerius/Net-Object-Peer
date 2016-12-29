@@ -19,6 +19,8 @@ class_api_ok(
       clear
       delete
       extends
+      find
+      nelem
       has
       list
       new

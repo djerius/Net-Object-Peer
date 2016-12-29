@@ -26,19 +26,43 @@ has _subscriptions => (
 
 =method list
 
+  @subs = $subs->list;
+
+return the list of subscriptions.
+
 =cut
 
 sub list {
     return @{ $_[0]->_subscriptions };
 }
 
+=method nelem
+
+  $nelem = $subs->nelem;
+
+return the number of elements in the list of subscriptions.
+
+=cut
+
+sub nelem {
+    return scalar @{ $_[0]->_subscriptions };
+}
+
 =method clear
+
+  $subs->clear;
+
+clear out the list of subscriptions
 
 =cut
 
 sub clear { $_[0]->_clear_subscriptions }
 
 =method add
+
+  $subs->add( @subscriptions );
+
+add one or more subscriptions.  They must be of class L<Net::Object::Peer::Subscription>;
 
 =cut
 
@@ -71,7 +95,40 @@ sub _find_index {
     }
 }
 
+=method find
+
+  my @subs = $subs->find( $coderef | %spec );
+
+Return subscriptions which match the passed arguments.
+
+A single argument must be a coderef; it will be invoked with a
+L<Net::Peer::Subscription> object as an argument.  It should return
+true if it matches, false otherwise.
+
+If a hash is passed, its values are compared to the attributes of
+subscriptions in the list.
+
+=cut
+
+sub find {
+
+    my $self = shift;
+
+    my $subs = $self->_subscriptions;
+
+    my @indices = $self->_find_index( @_ );
+
+    return @{$subs}[ @indices ];
+}
+
+
 =method delete
+
+  @subs = $subs->delete( $coderef | %spec );
+
+Delete and the matching subscriptions (see L</find> for the meaning
+of the arguments).
+
 
 =cut
 
@@ -85,7 +142,7 @@ sub delete {
     # or indices get messed up
     my @indices = reverse sort $self->_find_index( @_ );
 
-    return map { splice( @$subs, $_, 1 ) } @indices;
+    return reverse map { splice( @$subs, $_, 1 ) } @indices;
 
 }
 

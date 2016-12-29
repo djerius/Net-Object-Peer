@@ -2,6 +2,11 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+  [ENHANCEMENT]
+
+    * Net::Object::Peer::Subscriptions: new methods: find, nelem
+
+
 0.03      2016-12-27 17:48:29-05:00 America/New_York (TRIAL RELEASE)
 
   [BUG FIX]
