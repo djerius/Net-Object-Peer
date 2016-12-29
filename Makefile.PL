@@ -48,7 +48,7 @@ my %WriteMakefileArgs = (
     "Types::Standard" => 0,
     "namespace::clean" => 0
   },
-  "VERSION" => "0.03",
+  "VERSION" => "0.04",
   "test" => {
     "TESTS" => "t/*.t t/api/*.t t/api/Peer/*.t"
   }
