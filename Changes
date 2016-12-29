@@ -11,15 +11,15 @@ Revision history for {{$dist->name}}
 
   [BUG FIX]
 
-     * DEMOLISH was implemented by role, rather than being modified.
+    * DEMOLISH was implemented by role, rather than being modified.
 
 
 0.02      2016-12-26 17:41:04-05:00 America/New_York (TRIAL RELEASE)
 
   [BUG FIX]
-     * Listener didn't properly weaken reference to peer object
+    * Listener didn't properly weaken reference to peer object
 
   [DOCUMENTATION]
-     * better synopsis
+    * better synopsis
 
 0.01      2016-12-26 17:41:04-05:00 America/New_York (TRIAL RELEASE)
