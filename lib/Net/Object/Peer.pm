@@ -24,7 +24,6 @@ use Net::Object::Peer::UnsubscribeEvent;
 use Net::Object::Peer::Listener;
 use Net::Object::Peer::Emitter;
 use Net::Object::Peer::Subscriptions;
-use Net::Object::Peer::Subscription;
 
 use Sub::QuoteX::Utils qw[ quote_subs ];
 
@@ -43,7 +42,6 @@ use Sub::QuoteX::Utils qw[ quote_subs ];
 =cut
 
 use constant UnsubscribeEvent => __PACKAGE__ . '::UnsubscribeEvent';
-use constant Subscription     => __PACKAGE__ . '::Subscription';
 use constant Emitter          => __PACKAGE__ . '::Emitter';
 
 
@@ -219,18 +217,17 @@ sub subscribe {
 
         my ( $name, $sub ) = @$event;
 
-        $_->unsubscribe foreach $self->_subscriptions->delete(
+        $self->_subscriptions->remove(
             name => $name,
             peer => $peer,
         );
 
         $self->_subscriptions->add(
-            Subscription->new(
                 name => $name,
                 peer => $peer,
                 unsubscribe =>
                   $peer->_emitter->subscribe( $name, $sub, peer => $self ),
-            ) );
+            );
 
     }
 
@@ -288,8 +285,7 @@ sub _unsubscribe_all {
 
     # say $self->name, ":\tunsubscribing from all peers";
 
-    $_->unsubscribe foreach $self->subscriptions;
-    $self->_subscriptions->clear;
+    $self->_subscriptions->remove;
 
     # signal peers that unsubscribe has happened.
 
@@ -309,14 +305,13 @@ sub _unsubscribe_from_peer_events {
     for my $name ( @_ ) {
 
         for my $subscription (
-            $self->_subscriptions->delete(
+            $self->_subscriptions->remove(
                 peer => $peer,
                 name => $name,
             ) )
         {
             # say $self->name, ":\tunsubscribing from ", $peer->name, ":$name";
 
-            $subscription->unsubscribe;
             push @unsubscribed, $name;
         }
     }
@@ -343,7 +338,7 @@ sub _unsubscribe_from_peer {
 
     # say $self->name, ":\tunsubscribing from ", $peer->name;
 
-    $_->unsubscribe foreach $self->_subscriptions->delete( peer => $peer );
+    $self->_subscriptions->remove( peer => $peer );
 
     # say $self->name, ":\tnotifying ", $peer->name,
     #   " of unsubscription from all events";
@@ -360,16 +355,15 @@ sub _unsubscribe_from_events {
     return unless @names;
 
     my %subs;
-    my @subs = $self->_subscriptions->delete(
+    my @subs = $self->_subscriptions->remove(
         sub {
             grep { $_[0]->name eq $_ } @names;
         } );
 
     for my $sub ( @subs ) {
-        $sub->unsubscribe;
 
-        my $list = $subs{ refaddr $sub->peer } ||= [ $sub->peer ];
-        push @$list, $sub->name;
+        my $list = $subs{ refaddr $sub->{peer} } ||= [ $sub->{peer} ];
+        push @$list, $sub->{name};
     }
 
     for my $sub ( values %subs ) {
@@ -427,8 +421,8 @@ sub detach {
   my @subscriptions = $self->subscriptions( $coderef | %spec );
 
 Returns the events to which C<$self> is subscribed as a list of
-L<Net::Object::Peer::Subscription> objects.  If arguments are
-specified, only those which match are returned; see
+hashrefs (see L<Net::Object::Peer::Subscription::as_hashref>).  If
+arguments are specified, only those which match are returned; see
 L<Net::Object::Peer::Subscrition/find>;
 
 

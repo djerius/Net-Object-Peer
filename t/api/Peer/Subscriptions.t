@@ -16,14 +16,13 @@ class_api_ok(
       after
       around
       before
-      clear
-      delete
       extends
       find
       nelem
       has
       list
       new
+      remove
       with
       ],
 );

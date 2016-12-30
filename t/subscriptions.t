@@ -17,30 +17,29 @@ sub cmp_subscription ( $$ ) {
     my $ctx = context();
 
     my $ok
-      = is( $sub1->name,        $sub2->name,        "name" )
-      + is( $sub1->peer,        $sub2->peer,        "peer" )
-	# sneek a look at the real sub, not it's output
-      + is( $sub1->_unsubscribe, $sub2->_unsubscribe, "unsubscribe" );
+      = is( $sub1->{name},        $sub2->{name},        "name" )
+      + is( $sub1->{peer},        $sub2->{peer},        "peer" )
+	;
 
     $ctx->release;
 
     return $ok == 3;
 }
 
-subtest delete => sub {
+subtest remove => sub {
 
     subtest 'single sub' => sub {
 
 	my $fix = MyTest::Fixture::Subscriptions->new;
 
-        my @del = $fix->delete( sub { $_[0]->name == 2 } );
+        my @del = $fix->remove( sub { $_[0]->name == 2 } );
 
         subtest 'compacted list' => sub {
 	    is( $fix->nelem, 6, "number remaining" );
 	    cmp_subscription( ($fix->list)[4], $fix->subs->[5] );
         };
 
-	subtest 'deleted element' => sub {
+	subtest 'removed element' => sub {
 	    is( scalar @del, 1, "number" );
 	    cmp_subscription( $del[0], $fix->subs->[4] );
 	};
@@ -50,14 +49,14 @@ subtest delete => sub {
 
 	my $fix = MyTest::Fixture::Subscriptions->new;
 
-        my @del = $fix->delete( sub { $_[0]->name == 0 } );
+        my @del = $fix->remove( sub { $_[0]->name == 0 } );
 
         subtest 'compacted list' => sub {
 	    is( $fix->nelem, 5, "number remaining" );
 	    cmp_subscription( ($fix->list)[0], $fix->subs->[2] );
         };
 
-	subtest 'deleted elements' => sub {
+	subtest 'removed elements' => sub {
 	    is( scalar @del, 2, "number" );
 	    cmp_subscription( $del[0], $fix->subs->[0] );
 	    cmp_subscription( $del[1], $fix->subs->[1] );
@@ -69,14 +68,14 @@ subtest delete => sub {
 
 	my $fix = MyTest::Fixture::Subscriptions->new;
 
-        my @del = $fix->delete( name => 1 );
+        my @del = $fix->remove( name => 1 );
 
         subtest 'compacted list' => sub {
 	    is( $fix->nelem, 5, "number remaining" );
 	    cmp_subscription( ($fix->list)[2], $fix->subs->[4] );
         };
 
-	subtest 'deleted elements' => sub {
+	subtest 'removed elements' => sub {
 	    is( scalar @del, 2, "number" );
 	    cmp_subscription( $del[0], $fix->subs->[2] );
 	    cmp_subscription( $del[1], $fix->subs->[3] );
@@ -88,14 +87,14 @@ subtest delete => sub {
 
 	my $fix = MyTest::Fixture::Subscriptions->new;
 
-        my @del = $fix->delete( name => 3 );
+        my @del = $fix->remove( name => 3 );
 
         subtest 'compacted list' => sub {
 	    is( $fix->nelem, 5, "number remaining" );
 	    cmp_subscription( ($fix->list)[4], $fix->subs->[4] );
         };
 
-	subtest 'deleted elements' => sub {
+	subtest 'removed elements' => sub {
 	    is( scalar @del, 2, "number" );
 	    cmp_subscription( $del[0], $fix->subs->[5] );
 	    cmp_subscription( $del[1], $fix->subs->[6] );

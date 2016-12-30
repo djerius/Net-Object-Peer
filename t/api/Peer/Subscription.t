@@ -14,6 +14,7 @@ class_api_ok(
       DOES
       after
       around
+      as_hashref
       before
       extends
       has

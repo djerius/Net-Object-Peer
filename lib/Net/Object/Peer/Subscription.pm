@@ -7,6 +7,7 @@ use warnings;
 
 our $VERSION = '0.04';
 
+use Scalar::Util qw[ weaken ];
 use Types::Standard qw[ ConsumerOf Str CodeRef ];
 use namespace::clean;
 
@@ -46,6 +47,25 @@ has _unsubscribe => (
 =cut
 
 sub unsubscribe { $_[0]->_unsubscribe->() }
+
+=method as_hashref
+
+  $hashref = $sub->as_hashref;
+
+Return non-code attributes as a hash
+
+=cut
+
+sub as_hashref {
+
+    my $self = shift;
+
+    my %hash = map { $_ => $self->$_ } qw[ peer name ];
+
+    weaken $hash{peer};
+
+    return \%hash;
+}
 
 1;
 

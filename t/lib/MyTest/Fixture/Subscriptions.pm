@@ -9,33 +9,33 @@ use Net::Object::Peer::Subscription;
     with 'Net::Object::Peer';
 }
 
-use constant Peer  	   => 'MyTest::Fixture::Subscriptions::Peer';
+use constant Peer          => 'MyTest::Fixture::Subscriptions::Peer';
 use constant Subscription  => 'Net::Object::Peer::Subscription';
 use constant Subscriptions => 'Net::Object::Peer::Subscriptions';
 
 use Moo;
 
 has sls => (
-	    is => 'rwp',
-	    lazy => 1,
-	    clearer => 1,
-	    default => sub { $_[0]->_build_stuff->sls },
-            handles => [ qw( delete nelem list find ) ],
+    is      => 'rwp',
+    lazy    => 1,
+    clearer => 1,
+    default => sub { $_[0]->_build_stuff->sls },
+    handles => [qw( remove nelem list find )],
 );
 
 has peers => (
-	      is => 'rwp',
-	      lazy => 1,
-	      clearer => 1,
-	      default => sub { $_[0]->_build_sls->peers },
+    is      => 'rwp',
+    lazy    => 1,
+    clearer => 1,
+    default => sub { $_[0]->_build_sls->peers },
 );
 
 
 has subs => (
-	      is => 'rwp',
-	      lazy => 1,
-	      clearer => 1,
-	      default => sub { $_[0]->_build_sls->subs },
+    is      => 'rwp',
+    lazy    => 1,
+    clearer => 1,
+    default => sub { $_[0]->_build_sls->subs },
 );
 
 sub clearer {
@@ -56,13 +56,13 @@ sub _build_stuff {
     for my $idx ( 0, 0, 1, 1, 2, 3, 3 ) {
 
         push @peers, Peer->new;
-        push @subs,  Subscription->new(
+        push @subs,  {
             name => $idx,
             peer => $peers[-1],
             # at the moment, the unsubscribe callback isn't
             # constrained to do anything related to unsubscription
-            unsubscribe => sub { $idx },
-        );
+            unsubscribe => sub { $idx }
+        };
 
         $sls->add( $subs[-1] );
 

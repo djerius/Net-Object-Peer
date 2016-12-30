@@ -11,6 +11,8 @@ use Types::Standard qw[ ArrayRef InstanceOf ];
 use Ref::Util qw[ is_coderef ];
 use List::Util qw[ all ];
 
+use Net::Object::Peer::Subscription;
+
 use namespace::clean;
 
 use Moo;
@@ -21,19 +23,19 @@ has _subscriptions => (
     isa      => ArrayRef [ InstanceOf ['Net::Object::Peer::Subscription'] ],
     default => sub { [] },
     lazy    => 1,
-    clearer => 1,
 );
 
 =method list
 
   @subs = $subs->list;
 
-return the list of subscriptions.
+Returns a list of hashrefs containing attributes for all subscriptions.
+
 
 =cut
 
 sub list {
-    return @{ $_[0]->_subscriptions };
+    return map { $_->as_hashref } @{ $_[0]->_subscriptions };
 }
 
 =method nelem
@@ -48,28 +50,19 @@ sub nelem {
     return scalar @{ $_[0]->_subscriptions };
 }
 
-=method clear
-
-  $subs->clear;
-
-clear out the list of subscriptions
-
-=cut
-
-sub clear { $_[0]->_clear_subscriptions }
-
 =method add
 
-  $subs->add( @subscriptions );
+  $subs->add( %attr );
 
-add one or more subscriptions.  They must be of class L<Net::Object::Peer::Subscription>;
+Add a subscription.  See L<Net::Object::Peer::Subscription> for the
+supported attributes.
 
 =cut
 
 sub add {
     my $self = shift;
 
-    push @{ $self->_subscriptions }, @_;
+    push @{ $self->_subscriptions }, Net::Object::Peer::Subscription->new( @_ );
 
     return;
 }
@@ -99,7 +92,8 @@ sub _find_index {
 
   my @subs = $subs->find( $coderef | %spec );
 
-Return subscriptions which match the passed arguments.
+Returns a list of hashrefs containing attributes for subscriptions
+which match the passed arguments.
 
 A single argument must be a coderef; it will be invoked with a
 L<Net::Peer::Subscription> object as an argument.  It should return
@@ -116,34 +110,48 @@ sub find {
 
     my $subs = $self->_subscriptions;
 
-    my @indices = $self->_find_index( @_ );
+    return unless @_;
 
-    return @{$subs}[ @indices ];
+    my @indices = $self->_find_index( @_ );
+    return map { $_->as_hashref } @{$subs}[@indices];
 }
 
 
-=method delete
+=method remove
 
-  @subs = $subs->delete( $coderef | %spec );
+  @hashrefs = $subs->remove( $coderef | %spec );
 
-Delete and the matching subscriptions (see L</find> for the meaning
-of the arguments).
+Unsubscribe the matching subscriptions, remove them from the list of
+subscriptions, and return hashrefs containing the subscriptions' event
+names and peers.
 
 
 =cut
 
-sub delete {
+sub remove {
 
     my $self = shift;
 
     my $subs = $self->_subscriptions;
 
-    # need to remove subscriptions from the back to front,
-    # or indices get messed up
-    my @indices = reverse sort $self->_find_index( @_ );
+    my @subs;
 
-    return reverse map { splice( @$subs, $_, 1 ) } @indices;
+    if ( @_ ) {
+        # need to remove subscriptions from the back to front,
+        # or indices get messed up
+        my @indices = reverse sort $self->_find_index( @_ );
 
+        @subs = reverse map { splice( @$subs, $_, 1 ) } @indices;
+    }
+
+    else {
+        @subs  = @$subs;
+        @$subs = ();
+    }
+
+    $_->unsubscribe foreach @subs;
+
+    return map { $_->as_hashref } @subs;
 }
 
 1;

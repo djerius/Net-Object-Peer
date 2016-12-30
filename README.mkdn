@@ -244,8 +244,8 @@ Detach the object from the network.  It will
     my @subscriptions = $self->subscriptions( $coderef | %spec );
 
 Returns the events to which `$self` is subscribed as a list of
-[Net::Object::Peer::Subscription](https://metacpan.org/pod/Net::Object::Peer::Subscription) objects.  If arguments are
-specified, only those which match are returned; see
+hashrefs (see [Net::Object::Peer::Subscription::as\_hashref](https://metacpan.org/pod/Net::Object::Peer::Subscription::as_hashref)).  If
+arguments are specified, only those which match are returned; see
 ["find" in Net::Object::Peer::Subscrition](https://metacpan.org/pod/Net::Object::Peer::Subscrition#find);
 
 ## emit
