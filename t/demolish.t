@@ -216,5 +216,42 @@ subtest "inheritance" => sub {
 
 };
 
+subtest 'detach' => sub {
+
+        my $logger = MyTest::Logger->new;
+
+        my $n1 = ClassWithoutDemolish->new( name => 'N1', logger => $logger );
+        my $n2 = ClassWithoutDemolish->new( name => 'N2', logger => $logger );
+
+        cmp_expected {
+            $n1->subscribe( $n2, 'detach', 'unsubscribe' );
+        }
+        $logger,
+          {
+            event => "notify_subscribed",
+            self  => "N2",
+            peer  => "N1",
+            what  => [ "detach", "unsubscribe" ],
+          };
+
+	# make sure unsubscribe comes first.
+        cmp_expected {
+            undef $n2;
+        }
+        $logger,
+          {
+            event  => 'unsubscribe',
+            self   => 'N1',
+            peer   => 'N2',
+	    events => [ '%all%' ],
+          },
+          {
+            event  => 'detach',
+            self   => 'N1',
+            peer   => 'N2',
+          };
+
+};
+
 done_testing;
 

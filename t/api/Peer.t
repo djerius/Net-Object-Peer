@@ -14,6 +14,7 @@ class_api_ok(
     qw[
       DOES
       build_sub
+      detach
       emit
       emit_args
       send

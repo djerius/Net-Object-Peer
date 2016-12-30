@@ -131,6 +131,9 @@ via the subscriber's ["subscribe"](#subscribe) method, the emitter's
 
     $emitter->_notify_subscribed( $subscriber, @event_names );
 
+If the subscription already exists, it will be unsubscribed and
+then resubscribed.
+
 After a subscriber de-registers a handler, either explicitly via
 ["unsubscribe"](#unsubscribe) or when the object is destroyed, it will ["emit"](#emit) an
 `unsubscribe` event with a [Net::Object::Peer::UnsubscribeEvent](https://metacpan.org/pod/Net::Object::Peer::UnsubscribeEvent)
@@ -139,6 +142,11 @@ object as a payload.
 While emitters are not automatically subscribed to `"unsubscribe"`
 events, this is easily accomplished by adding code to the emitters'
 `_notify_subscribed` method.
+
+### Detach Events
+
+When an object is destroyed, it emits a `detach` event after
+unsubscribing from other peers' events.  This 
 
 # METHODS
 
@@ -216,6 +224,16 @@ for each subscription.
 Unsubscribe from events/peers. After unsubscription, an _unsubscribe_
 event with a [Net::Object::Peer::UnsubscribeEvent](https://metacpan.org/pod/Net::Object::Peer::UnsubscribeEvent) as a payload will
 be sent to affected peers who have subscribed to the unsubscribed event(s).
+
+## detach
+
+    $self->detach;
+
+Detach the object from the network.  It will
+
+1. Unsubscribe from all events from all peers.
+2. Emit an `unsubscribe` event with a [Net::Object::Peer::UnsubscribeEvent](https://metacpan.org/pod/Net::Object::Peer::UnsubscribeEvent) as a payload.
+3. Emit a `detach` event.
 
 ## subscriptions
 

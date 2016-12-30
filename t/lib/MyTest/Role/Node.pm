@@ -56,4 +56,8 @@ sub logit {
 
     }
 
+    sub _cb_detach {
+        my ( $self, $event ) = @_;
+	$self->logit( peer => $event->emitter->name );
+    }
 1;

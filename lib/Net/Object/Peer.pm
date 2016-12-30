@@ -387,6 +387,38 @@ sub _unsubscribe_from_events {
     return;
 }
 
+=method detach
+
+  $self->detach;
+
+Detach the object from the network.  It will
+
+=over
+
+=item 1
+
+Unsubscribe from all events from all peers.
+
+=item 2
+
+Emit an C<unsubscribe> event with a L<Net::Object::Peer::UnsubscribeEvent> as a payload.
+
+=item 3
+
+Emit a C<detach> event.
+
+=back
+
+=cut
+
+sub detach {
+    my $self = shift;
+
+    $self->unsubscribe;
+    $self->emit( 'detach' );
+}
+
+
 =method subscriptions
 
   my @subscriptions = $self->subscriptions;
@@ -484,9 +516,8 @@ around DEMOLISH => sub {
 
     my ( $self, $in_global_destruction ) = @_;
 
-    # unsubscribe from network
-    $self->unsubscribe
-	unless $in_global_destruction;
+    $self->detach
+      unless $in_global_destruction;
 
     &$orig;
 };
@@ -582,4 +613,7 @@ While emitters are not automatically subscribed to C<"unsubscribe">
 events, this is easily accomplished by adding code to the emitters'
 C<_notify_subscribed> method.
 
+=head3 Detach Events
 
+When an object is destroyed, it emits a C<detach> event after
+unsubscribing from other peers' events.  This 
