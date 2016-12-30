@@ -570,6 +570,9 @@ C<_notify_subscribed> method will be invoked (if it exists) as
 
   $emitter->_notify_subscribed( $subscriber, @event_names );
 
+If the subscription already exists, it will be unsubscribed and
+then resubscribed.
+
 After a subscriber de-registers a handler, either explicitly via
 L</unsubscribe> or when the object is destroyed, it will L</emit> an
 C<unsubscribe> event with a L<Net::Object::Peer::UnsubscribeEvent>
