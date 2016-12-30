@@ -54,7 +54,6 @@ has _subscriptions => (
     init_args => undef,
     isa       => InstanceOf ['Net::Object::Peer::Subscriptions'],
     default   => sub { Net::Object::Peer::Subscriptions->new },
-    handles   => { subscriptions => 'list' },
 );
 
 protected_has _emitter => (
@@ -421,10 +420,26 @@ sub detach {
 
 =method subscriptions
 
+  # return all subscriptions
   my @subscriptions = $self->subscriptions;
 
+  # return matching subscriptions
+  my @subscriptions = $self->subscriptions( $coderef | %spec );
+
 Returns the events to which C<$self> is subscribed as a list of
-L<Net::Object::Peer::Subscription> objects.
+L<Net::Object::Peer::Subscription> objects.  If arguments are
+specified, only those which match are returned; see
+L<Net::Object::Peer::Subscrition/find>;
+
+
+=cut
+
+sub subscriptions {
+
+    my $self = shift;
+
+    return @_ ? $self->_subscriptions->find( @_ ) : $self->_subscriptions->list;
+}
 
 =method emit
 

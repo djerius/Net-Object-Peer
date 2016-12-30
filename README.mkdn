@@ -237,10 +237,16 @@ Detach the object from the network.  It will
 
 ## subscriptions
 
+    # return all subscriptions
     my @subscriptions = $self->subscriptions;
 
+    # return matching subscriptions
+    my @subscriptions = $self->subscriptions( $coderef | %spec );
+
 Returns the events to which `$self` is subscribed as a list of
-[Net::Object::Peer::Subscription](https://metacpan.org/pod/Net::Object::Peer::Subscription) objects.
+[Net::Object::Peer::Subscription](https://metacpan.org/pod/Net::Object::Peer::Subscription) objects.  If arguments are
+specified, only those which match are returned; see
+["find" in Net::Object::Peer::Subscrition](https://metacpan.org/pod/Net::Object::Peer::Subscrition#find);
 
 ## emit
 

@@ -7,6 +7,7 @@ Revision history for {{$dist->name}}
     * New method: Peer::detach
     * Upon destruction, objects additionally emit a 'detach' event.
     * Net::Object::Peer::Subscriptions: new methods: find, nelem
+    * Peer::subscriptions now takes arguments which are passed on to find
 
 
 0.03      2016-12-27 17:48:29-05:00 America/New_York (TRIAL RELEASE)
