@@ -14,6 +14,7 @@ use constant Subscription  => 'Net::Object::Peer::Subscription';
 use constant Subscriptions => 'Net::Object::Peer::Subscriptions';
 
 use Moo;
+use Scalar::Util qw[ weaken ];
 
 has sls => (
     is      => 'rwp',
@@ -63,6 +64,7 @@ sub _build_stuff {
             # constrained to do anything related to unsubscription
             unsubscribe => sub { $idx }
         };
+	weaken $subs[-1]{peer};
 
         $sls->add( $subs[-1] );
 

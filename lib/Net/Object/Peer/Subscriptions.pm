@@ -81,7 +81,19 @@ sub _find_index {
 
         return grep {
             my $sub = $subs->[$_];
-            all { $sub->$_ eq $match{$_} } keys %match;
+            all {
+                if ( $sub->can( $_ ) ) {
+                    my $val = $sub->$_;
+
+                        !defined $val && !defined $match{$_} ? 1
+                      : !defined $val || !defined $match{$_} ? 0
+                      :   $val eq $match{$_};
+                }
+                else {
+                    0;
+                }
+            }
+            keys %match;
         } 0 .. @$subs - 1;
     }
 }
