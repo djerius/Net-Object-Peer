@@ -3,16 +3,15 @@
 package Net::Object::Peer::UnsubscribeEvent;
 
 use 5.10.0;
-use strict;
-use warnings;
-
-our $VERSION = '0.04';
 
 use Types::Standard qw[ ArrayRef Str is_ArrayRef ];
 
+use Moo;
+use strictures 2;
 use namespace::clean;
 
-use Moo;
+our $VERSION = '0.04';
+
 extends 'Net::Object::Peer::Event';
 
 =attr event_names

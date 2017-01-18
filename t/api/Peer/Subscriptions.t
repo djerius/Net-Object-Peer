@@ -13,17 +13,11 @@ class_api_ok(
     qw[
       DOES
       add
-      after
-      around
-      before
-      extends
       find
       nelem
-      has
       list
       new
       remove
-      with
       ],
 );
 

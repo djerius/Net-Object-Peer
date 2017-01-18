@@ -2,12 +2,13 @@
 package Net::Object::Peer::Emitter;
 
 use 5.10.0;
-use strict;
-use warnings;
+
+use Moo;
+use strictures 2;
+use namespace::clean;
 
 our $VERSION = '0.04';
 
-use Moo;
 with 'BeamX::Peer::Emitter';
 
 around subscribe => sub {

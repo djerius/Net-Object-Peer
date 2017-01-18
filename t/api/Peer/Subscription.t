@@ -12,17 +12,11 @@ class_api_ok(
     'Net::Object::Peer::Subscription',
     qw[
       DOES
-      after
-      around
       as_hashref
-      before
-      extends
-      has
       name
       new
       peer
       unsubscribe
-      with
       ],
 );
 

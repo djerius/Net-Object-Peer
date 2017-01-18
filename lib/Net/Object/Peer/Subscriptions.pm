@@ -2,10 +2,6 @@
 package Net::Object::Peer::Subscriptions;
 
 use 5.10.0;
-use strict;
-use warnings;
-
-our $VERSION = '0.04';
 
 use Types::Standard qw[ ArrayRef InstanceOf ];
 use Ref::Util qw[ is_coderef ];
@@ -13,9 +9,11 @@ use List::Util qw[ all ];
 
 use Net::Object::Peer::Subscription;
 
+use Moo;
+use strictures 2;
 use namespace::clean;
 
-use Moo;
+our $VERSION = '0.04';
 
 has _subscriptions => (
     is       => 'ro',

@@ -2,15 +2,15 @@
 package Net::Object::Peer::Event;
 
 use 5.10.0;
-use strict;
-use warnings;
+
+use Types::Standard 'ConsumerOf';
+
+use Moo;
+use strictures 2;
+use namespace::clean;
 
 our $VERSION = '0.04';
 
-use Types::Standard 'ConsumerOf';
-use namespace::clean;
-
-use Moo;
 extends 'Beam::Event';
 
 has emitter => (

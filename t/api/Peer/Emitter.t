@@ -12,13 +12,8 @@ class_api_ok(
     'Net::Object::Peer::Emitter',
     qw[
       DOES
-      after
-      around
-      before
       emit
       emit_args
-      extends
-      has
       listeners
       new
       on
@@ -27,7 +22,6 @@ class_api_ok(
       subscribe
       un
       unsubscribe
-      with
       ],
 );
 

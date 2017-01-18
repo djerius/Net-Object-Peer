@@ -2,16 +2,15 @@
 package Net::Object::Peer::Subscription;
 
 use 5.10.0;
-use strict;
-use warnings;
-
-our $VERSION = '0.04';
 
 use Scalar::Util qw[ weaken ];
 use Types::Standard qw[ ConsumerOf Str CodeRef ];
-use namespace::clean;
 
 use Moo;
+use strictures 2;
+use namespace::clean;
+
+our $VERSION = '0.04';
 
 
 =attr peer

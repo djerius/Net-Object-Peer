@@ -2,17 +2,15 @@
 package Net::Object::Peer::Listener;
 
 use 5.10.0;
-use strict;
-use warnings;
-
-our $VERSION = '0.04';
 
 use Types::Standard 'ConsumerOf';
-use namespace::clean;
 
 use Moo;
+use strictures 2;
+use namespace::clean;
 extends 'BeamX::Peer::Listener';
 
+our $VERSION = '0.04';
 
 has +peer => (
     is  => 'ro',
