@@ -2,6 +2,7 @@
 package Net::Object::Peer;
 
 use 5.10.0;
+use strictures 2;
 
 use Carp;
 our @CARP_NOT = qw( Beam::Emitter );
@@ -13,7 +14,6 @@ use Ref::Util qw[ is_arrayref ];
 use Types::Standard ':all';
 
 use Moo::Role;
-use strictures 2;
 
 use MooX::ProtectedAttributes;
 
