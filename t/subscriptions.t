@@ -7,6 +7,7 @@ use warnings;
 use Test2::Bundle::Extended;
 
 use Test::Lib;
+use Scalar::Util qw[ refaddr ];
 
 use MyTest::Fixture::Subscriptions;
 
@@ -162,11 +163,14 @@ subtest 'vanishing subscription' => sub {
     my $fix = MyTest::Fixture::Subscriptions->new;
 
     # zap one of the peers.
+    my $addr = refaddr $fix->peers->[-1];
     undef $fix->peers->[-1];
 
     # first verify that the deletion percolated into the subscription list
     my @found = $fix->find( sub { ! defined $_[0]->peer } );
-    is( scalar @found, 1, "number" );
+    is( scalar @found, 1, "found 1 deletion" );
+
+    is( $found[0]{addr}, $addr, "deleted sub has correct peer addr" );
 
     # now check that this doesn't croak because of undefined values
     ok( lives { $fix->find( peer => 'ffo' ) }, "ignore undefined in hash match" );

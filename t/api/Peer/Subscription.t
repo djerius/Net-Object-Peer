@@ -12,6 +12,7 @@ class_api_ok(
     'Net::Object::Peer::Subscription',
     qw[
       DOES
+      addr
       as_hashref
       name
       new

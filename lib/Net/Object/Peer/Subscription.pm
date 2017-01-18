@@ -3,7 +3,7 @@ package Net::Object::Peer::Subscription;
 
 use 5.10.0;
 
-use Scalar::Util qw[ weaken ];
+use Scalar::Util qw[ weaken refaddr ];
 use Types::Standard qw[ ConsumerOf Str CodeRef ];
 
 use Moo;
@@ -15,6 +15,8 @@ our $VERSION = '0.04';
 
 =attr peer
 
+A weak reference to the peer object subscribed to.
+
 =cut
 
 has peer => (
@@ -24,7 +26,21 @@ has peer => (
     isa      => ConsumerOf ['Net::Object::Peer'],
 );
 
+=attr addr
+
+The address returned by L<Scalar::Util::refaddr|Scalar::Util/refaddr> for
+the L</peer> attribute.
+
+=cut
+
+has addr => (
+    is       => 'rwp',
+    init_arg => undef,
+);
+
 =attr name
+
+The name of the event listened for.
 
 =cut
 
@@ -40,6 +56,22 @@ has _unsubscribe => (
     isa      => CodeRef,
     required => 1,
 );
+
+
+=begin pod_coverage
+
+=head3 BUILD
+
+=end pod_coverage
+
+=cut
+
+sub BUILD {
+
+    my $self = shift;
+
+    $self->_set_addr( refaddr $self->peer );
+}
 
 =method unsubscribe
 
@@ -59,7 +91,7 @@ sub as_hashref {
 
     my $self = shift;
 
-    my %hash = map { $_ => $self->$_ } qw[ peer name ];
+    my %hash = map { $_ => $self->$_ } qw[ peer name addr ];
 
     weaken $hash{peer};
 
