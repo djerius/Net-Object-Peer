@@ -177,7 +177,9 @@ handler.
     $self->subscribe( $peer, @event_tuple [, @event_tuple, ...  ] );
 
 Subscribe to one or more events sent by `$peer`, which must consume
-the [Net::Object::Peer](https://metacpan.org/pod/Net::Object::Peer) role.
+the [Net::Object::Peer](https://metacpan.org/pod/Net::Object::Peer) role.  If `$peer` additionally consumes the
+[Net::Object::Peer::Ephemeral](https://metacpan.org/pod/Net::Object::Peer::Ephemeral) role, a strong reference to `$peer`
+is stored. (See  ["Translation/Proxy Nodes" in Net::Object::Peer::Cookbook](https://metacpan.org/pod/Net::Object::Peer::Cookbook#Translation-Proxy-Nodes).)
 
 The event name and the action to be performed when the event is
 emitted are specified by a tuple with the following forms:

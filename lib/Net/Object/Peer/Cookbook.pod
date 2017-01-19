@@ -62,3 +62,119 @@ And the result:
  % perl examples/loop.pl LoopQuote
 # COMMAND: perl -Ilib examples/loop.pl LoopQuote
 
+=head2 Translation/Proxy Nodes
+
+Nodes in a network communicate via a common vocabulary of named
+events.  The problem at hand is how to subscribe to a node which uses
+a different naming scheme (but assumedly similar meanings).
+
+Let's start with a base C<Node> class:
+
+ # examples/translate/Node.pm
+# EXAMPLE: examples/translate/Node.pm
+
+and two subclasses, in one of which the C<doit> method emits an C<A> event
+
+ # examples/translate/NodeA.pm
+# EXAMPLE: examples/translate/NodeA.pm
+
+and in the other the C<doit> method emits a C<B> event
+
+ # examples/translate/NodeB.pm
+# EXAMPLE: examples/translate/NodeB.pm
+
+C<NodeA> expects an C<A> event from a C<doit()> action, but C<NodeB>
+emits a C<B> event: obviously a failure to communicate.
+
+=head3 Override the event Handler
+
+One approach to translating the C<B> event to an C<A> one is to
+override C<NodeA>'s default event handler for a C<B> event:
+
+ #examples/translate_override.pl
+# EXAMPLE: examples/translate_override.pl
+
+ % perl examples/translate_override.pl
+# COMMAND: perl examples/translate_override.pl
+
+However, this complicates instrospection of C<$nA>'s subscriptions of
+C<A> events, as an C<A> event might actually be a C<B> event.
+
+=head3 Proxy Node
+
+Another approach is to create a proxy node which translates events.
+
+ # examples/translate/TranslateBtoA.pm
+# EXAMPLE: examples/translate/TranslateBtoA.pm
+
+Things to note:
+
+=over
+
+=item *
+
+The object stores a weak reference to the node it's a proxy
+for.  Technically a reference is only needed for the subscription.
+
+=item *
+
+The proxy object identifies itself as the upstream emitter when it
+sends the event.
+
+=item *
+
+The object subscribes to the C<detach> event in addition to the one it
+will translate, so it can, in turn, send a C<detach> event to it's
+listeners.  A good listener will then unsubscribe.
+
+=back
+
+and here's code to use it:
+
+ # examples/translate_in_scope.pl
+# EXAMPLE: examples/translate_in_scope.pl
+
+with the result:
+
+ % perl examples/translate_in_scope.pl
+# COMMAND: perl examples/translate_in_scope.pl
+
+In this approach, there's an extra object (C<$xlate>) to keep track of.  Since
+B<Net::Object::Peer> uses only weak references, when C<$xlate> goes out of
+scope, the subscription will cease to do anything.  For example,
+
+ # examples/translate_out_of_scope.pl
+# EXAMPLE: examples/translate_out_of_scope.pl
+
+with the result:
+
+ % perl examples/translate_out_of_scope.pl
+# COMMAND: perl examples/translate_out_of_scope.pl
+
+I.e, nothing.
+
+
+One solution is to add the C<Net::Object::Peer::Ephemeral> role to the
+proxy class.
+
+ # examples/translate/TranslateBtoAEphemeral.pm
+# EXAMPLE: examples/translate/TranslateBtoAEphemeral.pm
+
+This instructs C<Net::Object::Peer> to store a strong reference, so the following
+code
+
+ # examples/translate_ephemeral.pl
+# EXAMPLE: examples/translate_ephemeral.pl
+
+works:
+
+ % perl examples/translate_ephemeral.pl
+# COMMAND: perl examples/translate_ephemeral.pl
+
+The drawback with this approach is that the listener seemingly
+recieves an event from an object (C<$nB>) which it hasn't subscribed
+to.  This can cause a problem for introspection, as the listener's list
+of subscriptions will not include C<$nB>.
+
+An alternative is for C<TranslageBtoA> to act as a pass through for
+all communications with C<$nB>.  

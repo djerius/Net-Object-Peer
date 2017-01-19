@@ -143,7 +143,9 @@ sub build_sub {
   $self->subscribe( $peer, @event_tuple [, @event_tuple, ...  ] );
 
 Subscribe to one or more events sent by C<$peer>, which must consume
-the L<Net::Object::Peer> role.
+the L<Net::Object::Peer> role.  If C<$peer> additionally consumes the
+L<Net::Object::Peer::Ephemeral> role, a strong reference to C<$peer>
+is stored. (See  L<Net::Object::Peer::Cookbook/Translation/Proxy Nodes>.)
 
 The event name and the action to be performed when the event is
 emitted are specified by a tuple with the following forms:

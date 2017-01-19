@@ -6,8 +6,11 @@ use 5.10.0;
 use Types::Standard qw[ ArrayRef InstanceOf ];
 use Ref::Util qw[ is_coderef ];
 use List::Util qw[ all ];
+use Safe::Isa;
 
 use Net::Object::Peer::Subscription;
+use Net::Object::Peer::Subscription::Ephemeral;
+
 
 use Moo;
 use strictures 2;
@@ -60,7 +63,12 @@ supported attributes.
 sub add {
     my $self = shift;
 
-    push @{ $self->_subscriptions }, Net::Object::Peer::Subscription->new( @_ );
+    my %attr = ( @_ == 1 ? %{ $_[0] } : @_ );
+
+    my $class = 'Net::Object::Peer::Subscription';
+    $class .= '::Ephemeral' if $attr{peer}->$_does( 'Net::Object::Peer::Ephemeral' );
+
+    push @{ $self->_subscriptions }, $class->new( %attr );
 
     return;
 }

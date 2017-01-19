@@ -8,7 +8,8 @@ Revision history for {{$dist->name}}
     * Upon destruction, objects additionally emit a 'detach' event.
     * Net::Object::Peer::Subscriptions: new methods: find, nelem
     * Peer::subscriptions now takes arguments which are passed on to find
-
+    * New role Peer::Ephemeral - instructs Peer to take a strong reference
+      to the peer.
 
 0.03      2016-12-27 17:48:29-05:00 America/New_York (TRIAL RELEASE)
 

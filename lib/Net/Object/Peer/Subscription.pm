@@ -108,3 +108,6 @@ __END__
 
 A B<Net::Object::Peer::Subscription> object manages a node's
 subscription to an emitter.
+
+It keeps a weak reference to the emitter so that the emitter will
+disappear after it's defining scope has been destroyed.
