@@ -18,7 +18,7 @@ use Moo::Role;
 
 use MooX::ProtectedAttributes;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use Net::Object::Peer::Event;
 use Net::Object::Peer::UnsubscribeEvent;

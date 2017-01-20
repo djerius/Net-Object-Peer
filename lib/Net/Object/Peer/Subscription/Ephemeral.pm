@@ -5,7 +5,7 @@ use 5.10.0;
 use strict;
 use warnings;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 use Moo;
 extends 'Net::Object::Peer::Subscription';

@@ -9,7 +9,7 @@ use Moo;
 use strictures 2;
 use namespace::clean;
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 
 extends 'Beam::Event';
 
