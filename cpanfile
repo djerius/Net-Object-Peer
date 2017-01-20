@@ -13,6 +13,7 @@ requires "Sub::QuoteX::Utils" => "0.03";
 requires "Types::Standard" => "0";
 requires "namespace::clean" => "0";
 requires "strict" => "0";
+requires "strictures" => "2";
 requires "warnings" => "0";
 
 on 'test' => sub {

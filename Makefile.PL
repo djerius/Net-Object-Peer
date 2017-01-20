@@ -31,6 +31,7 @@ my %WriteMakefileArgs = (
     "Types::Standard" => 0,
     "namespace::clean" => 0,
     "strict" => 0,
+    "strictures" => 2,
     "warnings" => 0
   },
   "TEST_REQUIRES" => {
@@ -80,6 +81,7 @@ my %FallbackPrereqs = (
   "Types::Standard" => 0,
   "namespace::clean" => 0,
   "strict" => 0,
+  "strictures" => 2,
   "warnings" => 0
 );
 
