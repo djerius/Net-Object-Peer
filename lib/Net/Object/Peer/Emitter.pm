@@ -7,7 +7,7 @@ use Moo;
 use strictures 2;
 use namespace::clean;
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 with 'BeamX::Peer::Emitter';
 

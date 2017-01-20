@@ -48,7 +48,7 @@ my %WriteMakefileArgs = (
     "Types::Standard" => 0,
     "namespace::clean" => 0
   },
-  "VERSION" => "0.04",
+  "VERSION" => "0.05",
   "test" => {
     "TESTS" => "t/*.t t/Net/Object/Peer/*.t t/api/*.t t/api/Peer/*.t t/unsubscribe/*.t"
   }
