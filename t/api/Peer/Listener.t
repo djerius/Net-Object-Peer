@@ -12,11 +12,13 @@ class_api_ok(
     'Net::Object::Peer::Listener',
     qw[
       DOES
+      addr
       after
       around
       before
       extends
       has
+      has_addr
       new
       peer
       with

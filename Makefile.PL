@@ -20,7 +20,7 @@ my %WriteMakefileArgs = (
     "BeamX::Peer::Emitter" => 0,
     "BeamX::Peer::Listener" => 0,
     "Data::OptList" => 0,
-    "List::Util" => "1.33",
+    "List::Util" => "1.45",
     "Moo" => 0,
     "MooX::ProtectedAttributes" => 0,
     "Ref::Util" => 0,
@@ -50,7 +50,7 @@ my %WriteMakefileArgs = (
   },
   "VERSION" => "0.04",
   "test" => {
-    "TESTS" => "t/*.t t/api/*.t t/api/Peer/*.t"
+    "TESTS" => "t/*.t t/Net/Object/Peer/*.t t/api/*.t t/api/Peer/*.t t/unsubscribe/*.t"
   }
 );
 
@@ -64,7 +64,7 @@ my %FallbackPrereqs = (
   "File::Spec" => 0,
   "IO::Handle" => 0,
   "IPC::Open3" => 0,
-  "List::Util" => "1.33",
+  "List::Util" => "1.45",
   "Moo" => 0,
   "MooX::ProtectedAttributes" => 0,
   "Ref::Util" => 0,

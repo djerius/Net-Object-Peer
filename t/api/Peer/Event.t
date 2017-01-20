@@ -12,12 +12,14 @@ class_api_ok(
     'Net::Object::Peer::Event',
     qw[
       DOES
+      addr
       after
       around
       before
       emitter
       extends
       has
+      has_addr
       name
       new
       new

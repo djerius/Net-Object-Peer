@@ -4,7 +4,7 @@ package Net::Object::Peer::Subscription;
 use 5.10.0;
 
 use Scalar::Util qw[ weaken refaddr ];
-use Types::Standard qw[ ConsumerOf Str CodeRef ];
+use Types::Standard qw[ ConsumerOf Str CodeRef InstanceOf ];
 
 use Moo;
 use strictures 2;
@@ -35,6 +35,7 @@ the L</peer> attribute.
 
 has addr => (
     is       => 'rwp',
+    isa      => InstanceOf['Net::Object::Peer::RefAddr'],
     init_arg => undef,
 );
 
@@ -70,7 +71,7 @@ sub BUILD {
 
     my $self = shift;
 
-    $self->_set_addr( refaddr $self->peer );
+    $self->_set_addr( Net::Object::Peer::RefAddr->new( $self->peer ) );
 }
 
 =method unsubscribe

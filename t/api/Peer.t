@@ -13,10 +13,12 @@ class_api_ok(
     'Net::Object::Peer',
     qw[
       DOES
+      addr
       build_sub
       detach
       emit
       emit_args
+      has_addr
       send
       send_args
       subscribe

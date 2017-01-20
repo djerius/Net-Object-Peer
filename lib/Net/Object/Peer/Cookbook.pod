@@ -1,3 +1,5 @@
+181:	hit eof while in pod documentation (no =cut seen)
+	this can cause trouble with some pod utilities
 #PODNAME: Net::Object::Peer::Cookbook
 #ABSTRACT: Recipes for Net::Object::Peer
 
@@ -118,18 +120,30 @@ for.  Technically a reference is only needed for the subscription.
 
 =item *
 
-The proxy object identifies itself as the upstream emitter when it
-sends the event.
+When resending the event, the proxy object
+
+=over
 
 =item *
 
-The object subscribes to the C<detach> event in addition to the one it
-will translate, so it can, in turn, send a C<detach> event to it's
-listeners.  A good listener will then unsubscribe.
+masquerades as the upstream emitter via the C<emitter> option; and
+
+=item *
+
+sets the C<addr> attribute to its own, so that the outgoing event
+will correctly identify the proxy object.
 
 =back
 
-and here's code to use it:
+=item *
+
+The proxy subscribes to the emitter's C<detach> event in addition to
+the one it will translate so that it can, in turn, send a C<detach>
+event to it's listeners.
+
+=back
+
+Here's code to use it:
 
  # examples/translate_in_scope.pl
 # EXAMPLE: examples/translate_in_scope.pl
@@ -170,11 +184,3 @@ works:
 
  % perl examples/translate_ephemeral.pl
 # COMMAND: perl examples/translate_ephemeral.pl
-
-The drawback with this approach is that the listener seemingly
-recieves an event from an object (C<$nB>) which it hasn't subscribed
-to.  This can cause a problem for introspection, as the listener's list
-of subscriptions will not include C<$nB>.
-
-An alternative is for C<TranslageBtoA> to act as a pass through for
-all communications with C<$nB>.  

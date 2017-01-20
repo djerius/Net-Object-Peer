@@ -7,6 +7,7 @@ use strictures 2;
 use Carp;
 our @CARP_NOT = qw( Beam::Emitter );
 
+use List::Util qw[ first uniqstr ];
 use Scalar::Util qw[ refaddr weaken ];
 use Data::OptList qw[ mkopt ];
 use Safe::Isa;
@@ -23,6 +24,7 @@ use Net::Object::Peer::Event;
 use Net::Object::Peer::UnsubscribeEvent;
 use Net::Object::Peer::Listener;
 use Net::Object::Peer::Emitter;
+use Net::Object::Peer::RefAddr;
 use Net::Object::Peer::Subscriptions;
 
 use Sub::QuoteX::Utils qw[ quote_subs ];
@@ -61,6 +63,37 @@ protected_has _emitter => (
     handles  => [qw< emit_args send_args >],
 );
 
+=attr addr
+
+A L<Net::Object::Peer::RefAddr> object providing a unique identity for this emitter.
+
+=cut
+
+has addr => (
+	     is => 'rwp',
+	     isa => InstanceOf[ 'Net::Object::Peer::RefAddr' ],
+	     init_arg => undef,
+	     predicate => 1,
+);
+
+=begin pod_coverage
+
+=head4 has_addr
+
+=head4 BUILD
+
+=end pod_coverage
+
+=cut
+
+sub BUILD {}
+
+before BUILD => sub {
+
+    my $self = shift;
+    $self->_set_addr( Net::Object::Peer::RefAddr->new( $self ) );
+
+};
 
 
 =method build_sub
@@ -119,10 +152,11 @@ sub build_sub {
                 quote_subs( [ delete $arg{code}, %arg ] );
             }
 
-	    else {
+            else {
 
-		croak( __PACKAGE__ . "::build_sub: can't figure out what to do with \%arg" );
-	    }
+                croak( __PACKAGE__
+                      . "::build_sub: can't figure out what to do with \%arg" );
+            }
         }
 
         elsif ( 'CODE' eq ref $arg ) {
@@ -225,11 +259,12 @@ sub subscribe {
         );
 
         $self->_subscriptions->add(
-                name => $name,
-                peer => $peer,
-                unsubscribe =>
-                  $peer->_emitter->subscribe( $name, $sub, peer => $self ),
-            );
+            name => $name,
+            peer => $peer,
+            addr => Net::Object::Peer::RefAddr->new( $peer ),
+            unsubscribe =>
+              $peer->_emitter->subscribe( $name, $sub, peer => $self, ),
+        );
 
     }
 
@@ -250,12 +285,25 @@ sub subscribe {
   # Unsubscribe from one or more events emitted by a peer
   $self->unsubscribe( $peer, $event_name [, $event_name [, ... ]);
 
+  # Unsubscribe from the peer and event specified by the passed
+  # Net::Object::Peer::Event object
+  $self->unsubscribe( $event_object );
+
   # Unsubscribe from one or more events emitted by all peers
   $self->unsubscribe( $event_name [, $event_name [, ... ] ] )
 
 Unsubscribe from events/peers. After unsubscription, an I<unsubscribe>
 event with a L<Net::Object::Peer::UnsubscribeEvent> as a payload will
 be sent to affected peers who have subscribed to the unsubscribed event(s).
+
+C<$peer> may be either a L<Net::Object::Peer> or a
+L<Net::Object::Peer::RefAddr> object.
+
+Note that B<Net::Object::Peer::Event> objects which are passed to
+event handlers may have a masqueraded C<emitter> attribute.  Attempting
+to unsubscribe from that C<emitter> is unwise.  Instead, pass either
+the event object or the C<addr> field in that object, which is guaranteed
+to identify the actual emitter subscribed to.
 
 =cut
 
@@ -266,7 +314,9 @@ sub unsubscribe {
     return $self->_unsubscribe_all
       unless @_;
 
-    if ( $_[0]->$_does( __PACKAGE__ ) ) {
+    if (   $_[0]->$_does( __PACKAGE__ )
+        || $_[0]->$_isa( 'Net::Object::Peer::RefAddr' ) )
+    {
 
         # $peer, $name, ...
         return $self->_unsubscribe_from_peer_events( @_ )
@@ -274,6 +324,11 @@ sub unsubscribe {
 
         # $peer
         return $self->_unsubscribe_from_peer( @_ );
+    }
+    elsif ( $_[0]->$_isa( 'Net::Object::Peer::Event' ) ) {
+
+	$self->_unsubscribe_from_peer_events( $_[0]->addr, $_[0]->name );
+
     }
 
     # $name, ...
@@ -298,36 +353,47 @@ sub _unsubscribe_all {
     return;
 }
 
+sub _find_peer_spec {
+
+    my $peer = shift;
+
+    return (
+          $peer->$_does( __PACKAGE__ )                  ? ( peer => $peer )
+        : $peer->isa( 'Net::Object::Peer::RefAddr' ) ? ( addr => $peer )
+        : croak( "can't grok \$peer: $peer\n" ),
+    );
+
+}
+
 sub _unsubscribe_from_peer_events {
 
     my ( $self, $peer ) = ( shift, shift );
 
-    my @unsubscribed;
+    my %spec = _find_peer_spec( $peer );
 
-    for my $name ( @_ ) {
+    my @unsubs = map {
+        my $name = $_;
+        map +{ name => $name, subs => $_ },
+          $self->_subscriptions->remove( %spec, name => $name )
+    } @_;
 
-        for my $subscription (
-            $self->_subscriptions->remove(
-                peer => $peer,
-                name => $name,
-            ) )
-        {
-            # say $self->name, ":\tunsubscribing from ", $peer->name, ":$name";
+    # if passed a refaddr, extract peer object from deleted subscriptions
+    if ( defined $spec{addr} ) {
 
-            push @unsubscribed, $name;
-        }
+        # check for subs where peer is still alive
+        my $sub = first { defined $_->{peer} } map { $_->{subs} } @unsubs;
+
+        return unless defined $sub;
+
+        $peer = $sub->{peer};
     }
 
-    if ( @unsubscribed ) {
-
-        # say $self->name, ":\tnotifying ", $peer->name,
-        #   " of unsubscription from ", join( ', ', @unsubscribed );
+    if ( @unsubs ) {
 
         $self->send(
             $peer, 'unsubscribe',
             class       => UnsubscribeEvent,
-            event_names => \@unsubscribed,
-        );
+            event_names => [ uniqstr map { $_->{name} } @unsubs ] );
     }
 
     return;
@@ -340,10 +406,20 @@ sub _unsubscribe_from_peer {
 
     # say $self->name, ":\tunsubscribing from ", $peer->name;
 
-    $self->_subscriptions->remove( peer => $peer );
+    my %spec = _find_peer_spec( $peer );
 
-    # say $self->name, ":\tnotifying ", $peer->name,
-    #   " of unsubscription from all events";
+    my @unsubs = $self->_subscriptions->remove( %spec );
+
+    # if passed a refaddr, extract peer object from deleted subscriptions
+    if ( defined $spec{addr} ) {
+
+        # check for subs where peer is still alive
+        my $sub = first { defined $_->{peer} } @unsubs;
+
+        return unless defined $sub;
+
+        $peer = $sub->{peer};
+    }
 
     $self->send( $peer, 'unsubscribe', class => UnsubscribeEvent );
 
@@ -357,14 +433,15 @@ sub _unsubscribe_from_events {
     return unless @names;
 
     my %subs;
+
     my @subs = $self->_subscriptions->remove(
         sub {
             grep { $_[0]->name eq $_ } @names;
         } );
 
-    for my $sub ( @subs ) {
+    for my $sub ( grep { defined $_->{peer} } @subs ) {
 
-        my $list = $subs{ refaddr $sub->{peer} } ||= [ $sub->{peer} ];
+        my $list = $subs{ 0 + $sub->{addr} } ||= [ $sub->{peer} ];
         push @$list, $sub->{name};
     }
 
@@ -446,7 +523,7 @@ sub subscriptions {
 Broadcast the named event to all subscribed peers.  C<%args> contains
 arguments to be passed the the payload class constructor.  The default
 payload class is a L<Net::Object::Peer::Event> object; use the C<class> key to
-specify an alternate class, which must be erived from B<Net::Object::Peer::Event>.
+specify an alternate class, which must be derived from B<Net::Object::Peer::Event>.
 
 =cut
 
@@ -458,7 +535,7 @@ sub emit {
         $name,
         class   => 'Net::Object::Peer::Event',
         emitter => $self,
-        @_
+        @_,
     );
 }
 
@@ -480,7 +557,7 @@ sub send {
         $name,
         class   => 'Net::Object::Peer::Event',
         emitter => $self,
-        @_
+        @_,
     );
 }
 
@@ -521,7 +598,7 @@ sub __cb_unsubscribe {
 
 =cut
 
-sub DEMOLISH {}
+sub DEMOLISH { }
 
 around DEMOLISH => sub {
 
@@ -629,4 +706,4 @@ C<_notify_subscribed> method.
 =head3 Detach Events
 
 When an object is destroyed, it emits a C<detach> event after
-unsubscribing from other peers' events.  This 
+unsubscribing from other peers' events.

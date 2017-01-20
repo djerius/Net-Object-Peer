@@ -23,7 +23,7 @@ sub _cb_B {
     my ( $self, $event ) = @_;
 
     # re-emit as A
-    $self->emit( 'A', emitter => $event->emitter );
+    $self->emit( 'A', emitter => $event->emitter, addr => $self->addr );
 }
 
 sub _cb_detach {

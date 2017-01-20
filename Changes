@@ -11,6 +11,9 @@ Revision history for {{$dist->name}}
     * New role Peer::Ephemeral - instructs Peer to take a strong reference
       to the peer.
 
+    * Most classes now track the reference address of an emitter in
+      case the emitter has been proxied.  See the Cookbook for a usage.
+
 0.03      2016-12-27 17:48:29-05:00 America/New_York (TRIAL RELEASE)
 
   [BUG FIX]

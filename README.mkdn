@@ -146,7 +146,13 @@ events, this is easily accomplished by adding code to the emitters'
 ### Detach Events
 
 When an object is destroyed, it emits a `detach` event after
-unsubscribing from other peers' events.  This 
+unsubscribing from other peers' events.
+
+# ATTRIBUTES
+
+## addr
+
+A [Net::Object::Peer::RefAddr](https://metacpan.org/pod/Net::Object::Peer::RefAddr) object providing a unique identity for this emitter.
 
 # METHODS
 
@@ -220,12 +226,25 @@ for each subscription.
     # Unsubscribe from one or more events emitted by a peer
     $self->unsubscribe( $peer, $event_name [, $event_name [, ... ]);
 
+    # Unsubscribe from the peer and event specified by the passed
+    # Net::Object::Peer::Event object
+    $self->unsubscribe( $event_object );
+
     # Unsubscribe from one or more events emitted by all peers
     $self->unsubscribe( $event_name [, $event_name [, ... ] ] )
 
 Unsubscribe from events/peers. After unsubscription, an _unsubscribe_
 event with a [Net::Object::Peer::UnsubscribeEvent](https://metacpan.org/pod/Net::Object::Peer::UnsubscribeEvent) as a payload will
 be sent to affected peers who have subscribed to the unsubscribed event(s).
+
+`$peer` may be either a [Net::Object::Peer](https://metacpan.org/pod/Net::Object::Peer) or a
+[Net::Object::Peer::RefAddr](https://metacpan.org/pod/Net::Object::Peer::RefAddr) object.
+
+Note that **Net::Object::Peer::Event** objects which are passed to
+event handlers may have a masqueraded `emitter` attribute.  Attempting
+to unsubscribe from that `emitter` is unwise.  Instead, pass either
+the event object or the `addr` field in that object, which is guaranteed
+to identify the actual emitter subscribed to.
 
 ## detach
 
@@ -257,7 +276,7 @@ arguments are specified, only those which match are returned; see
 Broadcast the named event to all subscribed peers.  `%args` contains
 arguments to be passed the the payload class constructor.  The default
 payload class is a [Net::Object::Peer::Event](https://metacpan.org/pod/Net::Object::Peer::Event) object; use the `class` key to
-specify an alternate class, which must be erived from **Net::Object::Peer::Event**.
+specify an alternate class, which must be derived from **Net::Object::Peer::Event**.
 
 ## send
 
