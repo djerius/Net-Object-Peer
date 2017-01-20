@@ -4,7 +4,7 @@ Net::Object::Peer - Peer-to-Peer Publish/Subscribe Network of Objects
 
 # VERSION
 
-version 0.04
+version 0.05
 
 # SYNOPSIS
 
