@@ -370,11 +370,13 @@ sub _unsubscribe_from_events {
 
     for my $sub ( values %subs ) {
 
-        my ( $peer, @names ) = @_;
-        $self->emit(
+        my ( $peer, @event_names ) = @$sub;
+
+        $self->send(
+            $peer,
             'unsubscribe',
             class       => UnsubscribeEvent,
-            event_names => \@names,
+            event_names => \@event_names,
         );
     }
 
