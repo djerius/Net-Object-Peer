@@ -51,7 +51,7 @@ my %WriteMakefileArgs = (
   },
   "VERSION" => "0.06",
   "test" => {
-    "TESTS" => "t/*.t t/Net/Object/Peer/*.t t/api/*.t t/api/Peer/*.t t/unsubscribe/*.t"
+    "TESTS" => "t/*.t t/Net/Object/Peer/*.t t/api/*.t t/api/Peer/*.t t/attributes/*.t t/unsubscribe/*.t"
   }
 );
 
