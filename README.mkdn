@@ -67,7 +67,6 @@ Resulting in:
     N2:    N1 sent hey
     N3:    N1 sent hey
     N2:    N1 sent hey
-    N1:    N2 unsubscribed
 
 # DESCRIPTION
 
@@ -136,10 +135,10 @@ then resubscribed.
 
 After a subscriber de-registers a handler, either explicitly via
 ["unsubscribe"](#unsubscribe) or when the object is destroyed, it will ["emit"](#emit) an
-`unsubscribe` event with a [Net::Object::Peer::UnsubscribeEvent](https://metacpan.org/pod/Net::Object::Peer::UnsubscribeEvent)
+`unsubscribed` event with a [Net::Object::Peer::UnsubscribeEvent](https://metacpan.org/pod/Net::Object::Peer::UnsubscribeEvent)
 object as a payload.
 
-While emitters are not automatically subscribed to `"unsubscribe"`
+While emitters are not automatically subscribed to `unsubscribed`
 events, this is easily accomplished by adding code to the emitters'
 `_notify_subscribed` method.
 
@@ -233,7 +232,7 @@ for each subscription.
     # Unsubscribe from one or more events emitted by all peers
     $self->unsubscribe( $event_name [, $event_name [, ... ] ] )
 
-Unsubscribe from events/peers. After unsubscription, an _unsubscribe_
+Unsubscribe from events/peers. After unsubscription, an _unsubscribed_
 event with a [Net::Object::Peer::UnsubscribeEvent](https://metacpan.org/pod/Net::Object::Peer::UnsubscribeEvent) as a payload will
 be sent to affected peers who have subscribed to the unsubscribed event(s).
 
@@ -253,7 +252,7 @@ to identify the actual emitter subscribed to.
 Detach the object from the network.  It will
 
 1. Unsubscribe from all events from all peers.
-2. Emit an `unsubscribe` event with a [Net::Object::Peer::UnsubscribeEvent](https://metacpan.org/pod/Net::Object::Peer::UnsubscribeEvent) as a payload.
+2. Emit an `unsubscribed` event with a [Net::Object::Peer::UnsubscribeEvent](https://metacpan.org/pod/Net::Object::Peer::UnsubscribeEvent) as a payload.
 3. Emit a `detach` event.
 
 ## subscriptions

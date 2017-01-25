@@ -40,7 +40,7 @@ subtest "weak references" => sub {
 
     cmp_expected {
         my $n2 = Node->new( name => 'N2', logger => $logger );
-        $n1->subscribe( $n2, 'unsubscribe' );
+        $n1->subscribe( $n2, 'unsubscribed' );
         $n2->subscribe( $n1, 'changed' );
         undef $n2;
     }
@@ -49,7 +49,7 @@ subtest "weak references" => sub {
         event => 'notify_subscribed',
         self  => 'N2',
         peer  => 'N1',
-        what  => 'unsubscribe',
+        what  => 'unsubscribed',
     },
       {
         event => 'notify_subscribed',
@@ -58,7 +58,7 @@ subtest "weak references" => sub {
         what  => 'changed',
       },
       {
-        event  => 'unsubscribe',
+        event  => 'unsubscribed',
         events => ['%all%'],
         self   => 'N1',
         peer   => 'N2',

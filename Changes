@@ -2,6 +2,12 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+  [API CHANGE]
+
+    * the event emitted when a listener unsubscribes from an emitter
+      is now named "unsubscribed" rather than "unsubscribe".
+      it indicates a state, not a command to unsubscribe.
+
 0.05      2017-01-19 12:09:06-05:00 America/New_York (TRIAL RELEASE)
 
   [BUILD]

@@ -36,7 +36,7 @@ sub logit {
 
     }
 
-    sub _cb_unsubscribe {
+    sub _cb_unsubscribed {
 
         my ( $self, $event ) = @_;
 

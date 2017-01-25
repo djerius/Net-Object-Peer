@@ -83,13 +83,13 @@ subtest "mix it up" => sub {
       };
 
     # n2 will notice if n1 is unsubscribed from it
-    cmp_expected { $n2->subscribe( $n1, 'unsubscribe' ) }
+    cmp_expected { $n2->subscribe( $n1, 'unsubscribed' ) }
     $logger,
       {
         event => "notify_subscribed",
         self  => "N1",
         peer  => "N2",
-        what  => "unsubscribe"
+        what  => "unsubscribed"
       };
 
 
@@ -125,7 +125,7 @@ subtest "mix it up" => sub {
     cmp_expected { $n1->unsubscribe( $n2, 'changed' ) }
     $logger,
       {
-        event  => "unsubscribe",
+        event  => "unsubscribed",
         self   => "N2",
         peer   => "N1",
         events => [ "changed", ],

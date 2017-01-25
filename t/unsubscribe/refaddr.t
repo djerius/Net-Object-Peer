@@ -59,13 +59,13 @@ subtest "unsubscribe from peer, one event" => sub {
         what  => "oneshot_event",
     };
 
-    cmp_expected { $n1->subscribe( $n2, 'unsubscribe' ) }
+    cmp_expected { $n1->subscribe( $n2, 'unsubscribed' ) }
     $logger,
     {
         event => "notify_subscribed",
         self  => "N2",
         peer  => "N1",
-        what  => "unsubscribe",
+        what  => "unsubscribed",
     };
 
     cmp_expected { $n1->emit( 'oneshot_event' ) }
@@ -76,7 +76,7 @@ subtest "unsubscribe from peer, one event" => sub {
        peer => 'N1',
        },
       {
-       event => 'unsubscribe',
+       event => 'unsubscribed',
        self => 'N1',
        peer => 'N2',
        events => [ 'oneshot_event' ],
@@ -103,13 +103,13 @@ subtest "unsubscribe from peer, all events" => sub {
         what  => [ "oneshot_event", "oneshot_event_all" ],
     };
 
-    cmp_expected { $n1->subscribe( $n2, 'unsubscribe' ) }
+    cmp_expected { $n1->subscribe( $n2, 'unsubscribed' ) }
     $logger,
     {
         event => "notify_subscribed",
         self  => "N2",
         peer  => "N1",
-        what  => "unsubscribe",
+        what  => "unsubscribed",
     };
 
     cmp_expected { $n1->emit( 'oneshot_event_all' ) }
@@ -120,7 +120,7 @@ subtest "unsubscribe from peer, all events" => sub {
        peer => 'N1',
        },
       {
-       event => 'unsubscribe',
+       event => 'unsubscribed',
        self => 'N1',
        peer => 'N2',
        events => [ '%all%' ],

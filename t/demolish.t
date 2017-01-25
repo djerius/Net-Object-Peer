@@ -46,14 +46,14 @@ subtest "no inheritance" => sub {
         my $n2 = ClassWithDemolish->new( name => 'N2', logger => $logger );
 
         cmp_expected {
-            $n1->subscribe( $n2, 'unsubscribe' );
+            $n1->subscribe( $n2, 'unsubscribed' );
         }
         $logger,
           {
             event => "notify_subscribed",
             self  => "N2",
             peer  => "N1",
-            what  => "unsubscribe",
+            what  => "unsubscribed",
           };
 
         cmp_expected {
@@ -61,7 +61,7 @@ subtest "no inheritance" => sub {
         }
         $logger,
           {
-            event  => 'unsubscribe',
+            event  => 'unsubscribed',
             self   => 'N1',
             peer   => 'N2',
             events => ['%all%'],
@@ -82,14 +82,14 @@ subtest "no inheritance" => sub {
         my $n2 = ClassWithoutDemolish->new( name => 'N2', logger => $logger );
 
         cmp_expected {
-            $n1->subscribe( $n2, 'unsubscribe' );
+            $n1->subscribe( $n2, 'unsubscribed' );
         }
         $logger,
           {
             event => "notify_subscribed",
             self  => "N2",
             peer  => "N1",
-            what  => "unsubscribe",
+            what  => "unsubscribed",
           };
 
         cmp_expected {
@@ -97,7 +97,7 @@ subtest "no inheritance" => sub {
         }
         $logger,
           {
-            event  => 'unsubscribe',
+            event  => 'unsubscribed',
             self   => 'N1',
             peer   => 'N2',
             events => ['%all%'],
@@ -145,14 +145,14 @@ subtest "inheritance" => sub {
         my $n2 = ChildWithDemolish->new( name => 'N2', logger => $logger );
 
         cmp_expected {
-            $n1->subscribe( $n2, 'unsubscribe' );
+            $n1->subscribe( $n2, 'unsubscribed' );
         }
         $logger,
           {
             event => "notify_subscribed",
             self  => "N2",
             peer  => "N1",
-            what  => "unsubscribe",
+            what  => "unsubscribed",
           };
 
         cmp_expected {
@@ -165,7 +165,7 @@ subtest "inheritance" => sub {
             self    => 'N2',
           },
           {
-            event  => 'unsubscribe',
+            event  => 'unsubscribed',
             self   => 'N1',
             peer   => 'N2',
             events => ['%all%'],
@@ -186,14 +186,14 @@ subtest "inheritance" => sub {
         my $n2 = ChildWithoutDemolish->new( name => 'N2', logger => $logger );
 
         cmp_expected {
-            $n1->subscribe( $n2, 'unsubscribe' );
+            $n1->subscribe( $n2, 'unsubscribed' );
         }
         $logger,
           {
             event => "notify_subscribed",
             self  => "N2",
             peer  => "N1",
-            what  => "unsubscribe",
+            what  => "unsubscribed",
           };
 
         cmp_expected {
@@ -201,7 +201,7 @@ subtest "inheritance" => sub {
         }
         $logger,
           {
-            event  => 'unsubscribe',
+            event  => 'unsubscribed',
             self   => 'N1',
             peer   => 'N2',
             events => ['%all%'],
@@ -224,23 +224,23 @@ subtest 'detach' => sub {
         my $n2 = ClassWithoutDemolish->new( name => 'N2', logger => $logger );
 
         cmp_expected {
-            $n1->subscribe( $n2, 'detach', 'unsubscribe' );
+            $n1->subscribe( $n2, 'detach', 'unsubscribed' );
         }
         $logger,
           {
             event => "notify_subscribed",
             self  => "N2",
             peer  => "N1",
-            what  => [ "detach", "unsubscribe" ],
+            what  => [ "detach", "unsubscribed" ],
           };
 
-	# make sure unsubscribe comes first.
+	# make sure unsubscribed comes first.
         cmp_expected {
             undef $n2;
         }
         $logger,
           {
-            event  => 'unsubscribe',
+            event  => 'unsubscribed',
             self   => 'N1',
             peer   => 'N2',
 	    events => [ '%all%' ],

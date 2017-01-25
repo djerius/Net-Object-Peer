@@ -71,25 +71,25 @@ subtest "unsubscribe from events" => sub {
     };
 
     cmp_expected {
-        $n1->subscribe( $n3, 'unsubscribe' )
+        $n1->subscribe( $n3, 'unsubscribed' )
     }
     $logger,
     {
         event => "notify_subscribed",
         self  => "N3",
         peer  => "N1",
-        what  => "unsubscribe",
+        what  => "unsubscribed",
     };
 
     cmp_expected {
-        $n2->subscribe( $n3, 'unsubscribe' )
+        $n2->subscribe( $n3, 'unsubscribed' )
     }
     $logger,
     {
         event => "notify_subscribed",
         self  => "N3",
         peer  => "N2",
-        what  => "unsubscribe",
+        what  => "unsubscribed",
     };
 
     # check things work
@@ -129,13 +129,13 @@ subtest "unsubscribe from events" => sub {
     cmp_expected_unordered { $n3->unsubscribe( 'echo' ) }
     $logger,
     {
-        event => "unsubscribe",
+        event => "unsubscribed",
         self  => "N1",
         peer  => "N3",
         events=> [ 'echo' ],
     },
     {
-        event => "unsubscribe",
+        event => "unsubscribed",
         self  => "N2",
         peer  => "N3",
         events=> [ 'echo' ],
@@ -145,7 +145,7 @@ subtest "unsubscribe from events" => sub {
     cmp_expected { $n3->unsubscribe( 'n1' ) }
     $logger,
     {
-        event => "unsubscribe",
+        event => "unsubscribed",
         self  => "N1",
         peer  => "N3",
         events=> [ 'n1' ],
@@ -155,7 +155,7 @@ subtest "unsubscribe from events" => sub {
     cmp_expected { $n3->unsubscribe( 'n2' ) }
     $logger,
     {
-        event => "unsubscribe",
+        event => "unsubscribed",
         self  => "N2",
         peer  => "N3",
         events=> [ 'n2' ],

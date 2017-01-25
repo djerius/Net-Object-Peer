@@ -33,14 +33,14 @@ subtest "not emphemeral" => sub {
 
     cmp_expected {
         my $n2 = Class->new( name => 'N2', logger => $logger );
-        $n1->subscribe( $n2, 'unsubscribe' );
+        $n1->subscribe( $n2, 'unsubscribed' );
     }
     $logger,
       {
         event => "notify_subscribed",
         self  => "N2",
         peer  => "N1",
-        what  => "unsubscribe",
+        what  => "unsubscribed",
       },
       {
         event   => 'DEMOLISH',
@@ -48,7 +48,7 @@ subtest "not emphemeral" => sub {
         package => 'Class',
       },
       {
-        event  => 'unsubscribe',
+        event  => 'unsubscribed',
         self   => 'N1',
         peer   => 'N2',
         events => ['%all%'],
@@ -68,14 +68,14 @@ subtest "emphemeral" => sub {
         my $n2 = Class->new( name => 'N2', logger => $logger );
         Moo::Role->apply_roles_to_object( $n2, 'Net::Object::Peer::Ephemeral' );
 	$n2_class = ref $n2;
-        $n1->subscribe( $n2, 'unsubscribe' );
+        $n1->subscribe( $n2, 'unsubscribed' );
     }
     $logger,
       {
         event => "notify_subscribed",
         self  => "N2",
         peer  => "N1",
-        what  => "unsubscribe",
+        what  => "unsubscribed",
       };
 
     cmp_expected {

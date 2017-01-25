@@ -43,6 +43,7 @@ use Sub::QuoteX::Utils qw[ quote_subs ];
 
 =cut
 
+use constant UNSUBSCRIBED     => 'unsubscribed';
 use constant UnsubscribeEvent => __PACKAGE__ . '::UnsubscribeEvent';
 use constant Emitter          => __PACKAGE__ . '::Emitter';
 
@@ -292,7 +293,7 @@ sub subscribe {
   # Unsubscribe from one or more events emitted by all peers
   $self->unsubscribe( $event_name [, $event_name [, ... ] ] )
 
-Unsubscribe from events/peers. After unsubscription, an I<unsubscribe>
+Unsubscribe from events/peers. After unsubscription, an I<unsubscribed>
 event with a L<Net::Object::Peer::UnsubscribeEvent> as a payload will
 be sent to affected peers who have subscribed to the unsubscribed event(s).
 
@@ -348,7 +349,7 @@ sub _unsubscribe_all {
 
     # say $self->name, ":\tnotifying all subscribed peers of unsubscription";
 
-    $self->emit( 'unsubscribe', class => UnsubscribeEvent );
+    $self->emit( UNSUBSCRIBED, class => UnsubscribeEvent );
 
     return;
 }
@@ -391,7 +392,7 @@ sub _unsubscribe_from_peer_events {
     if ( @unsubs ) {
 
         $self->send(
-            $peer, 'unsubscribe',
+            $peer, UNSUBSCRIBED,
             class       => UnsubscribeEvent,
             event_names => [ uniqstr map { $_->{name} } @unsubs ] );
     }
@@ -421,7 +422,7 @@ sub _unsubscribe_from_peer {
         $peer = $sub->{peer};
     }
 
-    $self->send( $peer, 'unsubscribe', class => UnsubscribeEvent );
+    $self->send( $peer, UNSUBSCRIBED, class => UnsubscribeEvent );
 
     return;
 }
@@ -451,7 +452,7 @@ sub _unsubscribe_from_events {
 
         $self->send(
             $peer,
-            'unsubscribe',
+            UNSUBSCRIBED,
             class       => UnsubscribeEvent,
             event_names => \@event_names,
         );
@@ -475,7 +476,7 @@ Unsubscribe from all events from all peers.
 
 =item 2
 
-Emit an C<unsubscribe> event with a L<Net::Object::Peer::UnsubscribeEvent> as a payload.
+Emit an C<unsubscribed> event with a L<Net::Object::Peer::UnsubscribeEvent> as a payload.
 
 =item 3
 
@@ -579,16 +580,6 @@ This is similar to the L</emit_args> method, but only sends the event to the
 specified peer.
 
 =cut
-
-# allow emit_args( unsubscribe => $event_name );
-# or emit( unsubscribe ) which will unsubscribe all events from the emitter
-sub __cb_unsubscribe {
-
-    if ( $_[1]->$_isa( 'Beam::Event' ) ) {
-        splice( @_, 1, 1, $_[1]->emitter );
-    }
-    goto &unsubscribe;
-}
 
 =begin pod_coverage
 
@@ -696,10 +687,10 @@ then resubscribed.
 
 After a subscriber de-registers a handler, either explicitly via
 L</unsubscribe> or when the object is destroyed, it will L</emit> an
-C<unsubscribe> event with a L<Net::Object::Peer::UnsubscribeEvent>
+C<unsubscribed> event with a L<Net::Object::Peer::UnsubscribeEvent>
 object as a payload.
 
-While emitters are not automatically subscribed to C<"unsubscribe">
+While emitters are not automatically subscribed to C<unsubscribed>
 events, this is easily accomplished by adding code to the emitters'
 C<_notify_subscribed> method.
 

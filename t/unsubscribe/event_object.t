@@ -47,13 +47,13 @@ subtest "unsubscribe from event object " => sub {
         what  => "oneshot",
     };
 
-    cmp_expected { $n1->subscribe( $n2, 'unsubscribe' ) }
+    cmp_expected { $n1->subscribe( $n2, 'unsubscribed' ) }
     $logger,
     {
         event => "notify_subscribed",
         self  => "N2",
         peer  => "N1",
-        what  => "unsubscribe",
+        what  => "unsubscribed",
     };
 
     cmp_expected { $n1->emit( 'oneshot' ) }
@@ -64,7 +64,7 @@ subtest "unsubscribe from event object " => sub {
        peer => 'N1',
        },
       {
-       event => 'unsubscribe',
+       event => 'unsubscribed',
        self => 'N1',
        peer => 'N2',
        events => [ 'oneshot' ],
