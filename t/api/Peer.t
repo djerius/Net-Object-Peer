@@ -15,9 +15,11 @@ class_api_ok(
       DOES
       addr
       build_sub
+      default_event_handler_prefix
       detach
       emit
       emit_args
+      event_handler_prefix
       has_addr
       send
       send_args

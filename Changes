@@ -8,6 +8,13 @@ Revision history for {{$dist->name}}
       is now named "unsubscribed" rather than "unsubscribe".
       it indicates a state, not a command to unsubscribe.
 
+  [ENHANCEMENT]
+
+    * the prefix for event handler methods may now be specified either
+      on a per object basis (via the event_handler_prefix) attribute,
+      or on a per class basis via the default_event_handler_prefix
+      class method.
+
 0.05      2017-01-19 12:09:06-05:00 America/New_York (TRIAL RELEASE)
 
   [BUILD]

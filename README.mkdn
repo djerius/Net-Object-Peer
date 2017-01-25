@@ -149,11 +149,37 @@ unsubscribing from other peers' events.
 
 # ATTRIBUTES
 
+## event\_handler\_prefix
+
+The string which prefixes default event handler method names. See
+["subscribe"](#subscribe).  It will by default be initialized to the return value
+of the ["default\_event\_handler\_prefix"](#default_event_handler_prefix) method.  It may be specified
+during object construction.
+
+For example, the default handler method name for an event named
+`changed` would be `_cb_changed`.  The class must provide that
+method. See ["subscribe"](#subscribe) for more information.
+
 ## addr
 
 A [Net::Object::Peer::RefAddr](https://metacpan.org/pod/Net::Object::Peer::RefAddr) object providing a unique identity for this emitter.
 
 # METHODS
+
+## new
+
+    $obj = Net::Object::Peer->new( %args | \%args );
+
+Construct a new object.  The following arguments are available:
+
+- event\_handler\_prefix
+
+    The string which prefixes default event handler method names. See ["event\_handler\_prefix"](#event_handler_prefix)
+
+## default\_event\_handler\_prefix
+
+This class method returns the prefix for the default event handler method names.
+It defaults to returning `_cb_`.
 
 ## build\_sub
 
@@ -191,7 +217,8 @@ emitted are specified by a tuple with the following forms:
 
 - `$event_name`
 
-    the event handler will invoke the `_cb_${event_name}` method on `$self`.
+    the event handler will invoke the `${prefix}${event_name}` method on `$self`,
+    where `$prefix` is the [event\_handler\_prefix attribute](#event_handler_prefix).
 
 - `$event_name => { method => $method_name }`
 

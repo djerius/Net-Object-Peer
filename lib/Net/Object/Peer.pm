@@ -64,6 +64,26 @@ protected_has _emitter => (
     handles  => [qw< emit_args send_args >],
 );
 
+=attr event_handler_prefix
+
+The string which prefixes default event handler method names. See
+L</subscribe>.  It will by default be initialized to the return value
+of the L</default_event_handler_prefix> method.  It may be specified
+during object construction.
+
+For example, the default handler method name for an event named
+C<changed> would be C<_cb_changed>.  The class must provide that
+method. See L</subscribe> for more information.
+
+=cut
+
+has event_handler_prefix => (
+  is => 'lazy',
+  isa => Str,
+  builder => sub { $_[0]->default_event_handler_prefix }
+);
+
+
 =attr addr
 
 A L<Net::Object::Peer::RefAddr> object providing a unique identity for this emitter.
@@ -96,6 +116,31 @@ before BUILD => sub {
 
 };
 
+
+=method new
+
+  $obj = Net::Object::Peer->new( %args | \%args );
+
+Construct a new object.  The following arguments are available:
+
+=over
+
+=item event_handler_prefix
+
+The string which prefixes default event handler method names. See L</event_handler_prefix>
+
+=back
+
+=cut
+
+=method default_event_handler_prefix
+
+This class method returns the prefix for the default event handler method names.
+It defaults to returning C<_cb_>.
+
+=cut
+
+sub default_event_handler_prefix { '_cb_' }
 
 =method build_sub
 
@@ -135,7 +180,7 @@ sub build_sub {
 
         if ( !defined $arg ) {
 
-            quote_subs( [ $self, "_cb_$name" ] );
+            quote_subs( [ $self, $self->event_handler_prefix . $name ] );
         }
 
         elsif ( 'HASH' eq ref $arg ) {
@@ -189,7 +234,8 @@ emitted are specified by a tuple with the following forms:
 
 =item C<< $event_name >>
 
-the event handler will invoke the C<_cb_${event_name}> method on C<$self>.
+the event handler will invoke the C<${prefix}${event_name}> method on C<$self>,
+where C<$prefix> is the L<event_handler_prefix attribute|/event_handler_prefix>.
 
 =item C<< $event_name => { method => $method_name } >>
 
