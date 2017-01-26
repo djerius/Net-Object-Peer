@@ -166,15 +166,36 @@ A [Net::Object::Peer::RefAddr](https://metacpan.org/pod/Net::Object::Peer::RefAd
 
 # METHODS
 
+## emits\_events
+
+    $bool = $obj->emits_events( @event_names );
+
+Returns true if the object emits _all_ of the named events
+
+## default\_events
+
+    @events = $class->default_events;
+
+Returns a list of events which this class will emit, excluding the `detach` and `unsubscribed` events.
+The default implementation returns an empty list.  A per object event list may be specified via
+the ["events"](#events) attribute or the `events` option to the [constructor](#new).
+
 ## new
 
     $obj = Net::Object::Peer->new( %args | \%args );
 
 Construct a new object.  The following arguments are available:
 
-- event\_handler\_prefix
+- event\_handler\_prefix => _string_
 
     The string which prefixes default event handler method names. See ["event\_handler\_prefix"](#event_handler_prefix)
+
+- events => _string_ | _arrayref_
+
+    The name(s) of the event(s) this object will emit (don't include the
+    `unsubscribed` and `detach` events).  May be a single string or an
+    arrayref. If not specified, the list of events will be initialized via the
+    ["default\_events"](#default_events) class method.
 
 ## default\_event\_handler\_prefix
 
@@ -271,6 +292,16 @@ event handlers may have a masqueraded `emitter` attribute.  Attempting
 to unsubscribe from that `emitter` is unwise.  Instead, pass either
 the event object or the `addr` field in that object, which is guaranteed
 to identify the actual emitter subscribed to.
+
+## events
+
+    @events = $obj->events;
+    $obj->events( \@event_names | $event_name );
+
+As a getter, returns a list of event names which the object may emit.
+
+As a setter, accepts either an arrayref or a single event name.  Event
+names must a valid Perl identifier (e.g., no `:` or `-` characters).
 
 ## detach
 

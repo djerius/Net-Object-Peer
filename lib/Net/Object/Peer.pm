@@ -7,12 +7,13 @@ use strictures 2;
 use Carp;
 our @CARP_NOT = qw( Beam::Emitter );
 
-use List::Util qw[ first uniqstr ];
+use List::Util qw[ all first uniqstr ];
 use Scalar::Util qw[ refaddr weaken ];
 use Data::OptList qw[ mkopt ];
 use Safe::Isa;
 use Ref::Util qw[ is_arrayref ];
 use Types::Standard ':all';
+use Sub::Quote;
 
 use Moo::Role;
 
@@ -21,6 +22,7 @@ use MooX::ProtectedAttributes;
 our $VERSION = '0.06';
 
 use Net::Object::Peer::Event;
+use Net::Object::Peer::Types qw[ -all ];
 use Net::Object::Peer::UnsubscribeEvent;
 use Net::Object::Peer::Listener;
 use Net::Object::Peer::Emitter;
@@ -78,10 +80,78 @@ method. See L</subscribe> for more information.
 =cut
 
 has event_handler_prefix => (
-  is => 'lazy',
-  isa => Str,
-  builder => sub { $_[0]->default_event_handler_prefix }
+    is      => 'lazy',
+    isa     => Str,
+    builder => sub { $_[0]->default_event_handler_prefix } );
+
+
+
+has _events_arr => (
+    is      => 'rwp',
+    isa     => ArrayRef [Identifier],
+    coerce  => qsub q{ 'ARRAY' eq ref $_[0] ? [ @{$_[0]} ] : [ $_[0] ]; },
+    default => qsub q{ ['detach', 'unsubscribed', $_[0]->default_events ]; },
+    init_arg => 'events',
+    trigger => 1
 );
+
+has _events_hash => (
+    is        => 'lazy',
+    init_args => undef,
+    clearer   => 1,
+);
+
+sub _trigger__events_arr {
+
+    my $self = shift;
+
+    # force rebuild of _events attribute
+    $self->_clear_events_hash;
+
+    # _events gives us a unique list which includes the standard ones.
+    # we know that we own the arrayref in $self->events because of the
+    # its coercion.
+    @{ $self->_events_arr } = keys %{ $self->_events_hash };
+}
+
+sub _build__events_hash {
+
+    my %events = ( detach => 1, unsubscribed => 1 );
+
+    # just need to populate the keys
+    @events{ @{ $_[0]->_events_arr } } = undef;
+
+    \%events;
+}
+
+=method  emits_events
+
+   $bool = $obj->emits_events( @event_names );
+
+Returns true if the object emits I<all> of the named events
+
+=cut
+
+sub emits_events {
+
+    my $self = shift;
+    my $events = $self->_events_hash;
+
+    return all { exists $events->{$_} } @_;
+}
+
+=method  default_events
+
+  @events = $class->default_events;
+
+Returns a list of events which this class will emit, excluding the C<detach> and C<unsubscribed> events.
+The default implementation returns an empty list.  A per object event list may be specified via
+the L</events> attribute or the C<events> option to the L<constructor|/new>.
+
+=cut
+
+sub default_events { }
+
 
 
 =attr addr
@@ -91,10 +161,10 @@ A L<Net::Object::Peer::RefAddr> object providing a unique identity for this emit
 =cut
 
 has addr => (
-	     is => 'rwp',
-	     isa => InstanceOf[ 'Net::Object::Peer::RefAddr' ],
-	     init_arg => undef,
-	     predicate => 1,
+    is        => 'rwp',
+    isa       => InstanceOf ['Net::Object::Peer::RefAddr'],
+    init_arg  => undef,
+    predicate => 1,
 );
 
 =begin pod_coverage
@@ -107,7 +177,7 @@ has addr => (
 
 =cut
 
-sub BUILD {}
+sub BUILD { }
 
 before BUILD => sub {
 
@@ -125,9 +195,16 @@ Construct a new object.  The following arguments are available:
 
 =over
 
-=item event_handler_prefix
+=item event_handler_prefix => I<string>
 
 The string which prefixes default event handler method names. See L</event_handler_prefix>
+
+=item events => I<string> | I<arrayref>
+
+The name(s) of the event(s) this object will emit (don't include the
+C<unsubscribed> and C<detach> events).  May be a single string or an
+arrayref. If not specified, the list of events will be initialized via the
+L</default_events> class method.
 
 =back
 
@@ -374,7 +451,7 @@ sub unsubscribe {
     }
     elsif ( $_[0]->$_isa( 'Net::Object::Peer::Event' ) ) {
 
-	$self->_unsubscribe_from_peer_events( $_[0]->addr, $_[0]->name );
+        $self->_unsubscribe_from_peer_events( $_[0]->addr, $_[0]->name );
 
     }
 
@@ -405,9 +482,9 @@ sub _find_peer_spec {
     my $peer = shift;
 
     return (
-          $peer->$_does( __PACKAGE__ )                  ? ( peer => $peer )
+          $peer->$_does( __PACKAGE__ )               ? ( peer => $peer )
         : $peer->isa( 'Net::Object::Peer::RefAddr' ) ? ( addr => $peer )
-        : croak( "can't grok \$peer: $peer\n" ),
+        :   croak( "can't grok \$peer: $peer\n" ),
     );
 
 }
@@ -506,6 +583,32 @@ sub _unsubscribe_from_events {
 
 
     return;
+}
+
+=method events
+
+  @events = $obj->events;
+  $obj->events( \@event_names | $event_name );
+
+As a getter, returns a list of event names which the object may emit.
+
+As a setter, accepts either an arrayref or a single event name.  Event
+names must a valid Perl identifier (e.g., no C<:> or C<-> characters).
+
+=cut
+
+sub events {
+
+    my $self = shift;
+
+    if ( @_ ) {
+
+	$self->_set__events_arr( @_ );
+	return;
+    }
+
+    return @{ $self->_events_arr };
+
 }
 
 =method detach

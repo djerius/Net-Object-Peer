@@ -17,6 +17,7 @@ requires "strictures" => "2";
 requires "warnings" => "0";
 
 on 'test' => sub {
+  requires "Algorithm::Combinatorics" => "0";
   requires "ExtUtils::MakeMaker" => "0";
   requires "File::Spec" => "0";
   requires "IO::Handle" => "0";

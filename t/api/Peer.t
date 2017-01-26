@@ -16,10 +16,13 @@ class_api_ok(
       addr
       build_sub
       default_event_handler_prefix
+      default_events
       detach
       emit
       emit_args
+      emits_events
       event_handler_prefix
+      events
       has_addr
       send
       send_args

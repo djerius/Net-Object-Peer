@@ -35,6 +35,7 @@ my %WriteMakefileArgs = (
     "warnings" => 0
   },
   "TEST_REQUIRES" => {
+    "Algorithm::Combinatorics" => 0,
     "ExtUtils::MakeMaker" => 0,
     "File::Spec" => 0,
     "IO::Handle" => 0,
@@ -57,6 +58,7 @@ my %WriteMakefileArgs = (
 
 
 my %FallbackPrereqs = (
+  "Algorithm::Combinatorics" => 0,
   "Beam::Emitter" => "1.005",
   "BeamX::Peer::Emitter" => 0,
   "BeamX::Peer::Listener" => 0,
