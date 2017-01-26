@@ -118,8 +118,11 @@ sub _build__events_hash {
 
     my %events = ( detach => 1, unsubscribed => 1 );
 
+    my $events_arr = $_[0]->_events_arr;
+
     # just need to populate the keys
-    @events{ @{ $_[0]->_events_arr } } = undef;
+    @events{ @{ $events_arr } } = undef
+      if $events_arr;
 
     \%events;
 }
@@ -464,14 +467,10 @@ sub _unsubscribe_all {
 
     my $self = shift;
 
-    # say $self->name, ":\tunsubscribing from all peers";
-
-    $self->_subscriptions->remove;
+    $self->_subscriptions->remove
+      if defined $self->_subscriptions;
 
     # signal peers that unsubscribe has happened.
-
-    # say $self->name, ":\tnotifying all subscribed peers of unsubscription";
-
     $self->emit( UNSUBSCRIBED, class => UnsubscribeEvent );
 
     return;
