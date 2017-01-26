@@ -82,7 +82,8 @@ method. See L</subscribe> for more information.
 has event_handler_prefix => (
     is      => 'lazy',
     isa     => Str,
-    builder => sub { $_[0]->default_event_handler_prefix } );
+    builder => sub { $_[0]->default_event_handler_prefix },
+);
 
 
 
@@ -306,6 +307,8 @@ Subscribe to one or more events sent by C<$peer>, which must consume
 the L<Net::Object::Peer> role.  If C<$peer> additionally consumes the
 L<Net::Object::Peer::Ephemeral> role, a strong reference to C<$peer>
 is stored. (See  L<Net::Object::Peer::Cookbook/Translation/Proxy Nodes>.)
+An attempt to subscribe to an event the peer does not produce will throw
+an exception.
 
 The event name and the action to be performed when the event is
 emitted are specified by a tuple with the following forms:
@@ -372,6 +375,10 @@ sub subscribe {
 
         croak( "\$name must be a string\n" )
           if ref $name;
+
+	croak( qq[\$peer does not emit event "$name" ] )
+	  unless $peer->emits_events( $name );
+
         push @register, [ $name, $self->build_sub( $peer, $name, $arg ) ];
     }
 
@@ -671,14 +678,19 @@ sub subscriptions {
 
 Broadcast the named event to all subscribed peers.  C<%args> contains
 arguments to be passed the the payload class constructor.  The default
-payload class is a L<Net::Object::Peer::Event> object; use the C<class> key to
-specify an alternate class, which must be derived from B<Net::Object::Peer::Event>.
+payload class is a L<Net::Object::Peer::Event> object; use the
+C<class> key to specify an alternate class, which must be derived from
+B<Net::Object::Peer::Event>.  An attempt to emit an event which is not
+supported by the emitter will cause an exception to be thrown.
 
 =cut
 
 sub emit {
 
     my ( $self, $name ) = ( shift, shift );
+
+    croak( q[\$self does not emit event "$name"\n] )
+      unless $self->emits_events( $name );
 
     $self->_emitter->emit(
         $name,
@@ -693,13 +705,17 @@ sub emit {
   $self->send( $peer, $event_name, %args );
 
 This is similar to the L</emit> method, but only sends the event to the
-specified peer.
+specified peer.  An attempt to emit an event which is not
+supported by the emitter will cause an exception to be thrown.
 
 =cut
 
 sub send {
 
     my ( $self, $peer, $name ) = ( shift, shift, shift );
+
+    croak( q[\$self does not emit event "$name"\n] )
+      unless $self->emits_events( $name );
 
     $self->_emitter->send(
         $peer,
@@ -716,18 +732,36 @@ sub send {
   $self->emit_args( $event_name, @args );
 
 Broadcast the named event to all subscribed peers. C<@args> will be
-passed directly to each subscriber's callback.
+passed directly to each subscriber's callback.  An attempt to emit an event which is not
+supported by the emitter will cause an exception to be thrown.
 
 =cut
+
+before emit_args => sub {
+
+    my ( $self, $name ) = @_;
+
+    croak( q[\$self does not emit event "$name"\n] )
+      unless $self->emits_events( $name );
+};
 
 =method send_args
 
   $self->send_args( $peer, $event_name, @args );
 
 This is similar to the L</emit_args> method, but only sends the event to the
-specified peer.
+specified peer.  An attempt to emit an event which is not
+supported by the emitter will cause an exception to be thrown.
 
 =cut
+
+before send_args => sub {
+
+    my ( $self, $peer, $name ) = @_;
+
+    croak( q[\$self does not emit event "$name"\n] )
+      unless $self->emits_events( $name );
+};
 
 =begin pod_coverage
 
@@ -799,6 +833,36 @@ C<$n1>'s C<_cb_changed> method is invoked when C<$n2> emits a
 C<changed> event.
 
 =head2 Events
+
+An emitter must register the events that it will emit.  Here's how
+
+=over
+
+=item 1
+
+Class defaults
+
+A default set of events for the class may be specified by defining
+the L</default_events> class method, which should return a list
+of event names:
+
+  sub default_events{ qw[ evt1 evt2 evt3 ] }
+
+=item 2
+
+Object defaults
+
+During object construction, the L<events|/new> attribute may be used
+to specify a list of events.
+
+=item 3
+
+Runtime manipulation
+
+The L</events> object method may be used to overwrite the list
+of events.
+
+=back
 
 When a subscriber recieves an event, its registered handler for that
 event type is invoked.  If the object creating the event used the

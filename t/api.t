@@ -12,6 +12,8 @@ use Test2::Bundle::Extended;
 
     with 'Net::Object::Peer';
 
+    sub default_events { qw[ signal ] }
+
     has _stash => (
         is        => 'ro',
         init_args => undef,

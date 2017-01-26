@@ -11,6 +11,8 @@ with 'Net::Object::Peer';
 
 has name => is => ( 'ro', required => 1 );
 
+sub default_events { qw[ hey ] }
+
 sub _notify_subscribed {
     my ( $self, $peer, $name ) = @_;
     say $self->name, ":\t@{[ $peer->name ]} subscribed to event $name";
@@ -22,7 +24,7 @@ sub _cb_hey {
       ":\t@{[ $event->emitter->name ]} sent @{[$event->name]}";
 }
 
-sub _cb_unsubscribe {
+sub _cb_unsubscribed {
     my ( $self, $event ) = @_;
     say $self->name, ":\t@{[ $event->emitter->name ]} unsubscribed";
 }
@@ -34,9 +36,9 @@ my $n1 = Node->new( name => 'N1' );
 my $n2 = Node->new( name => 'N2' );
 my $n3 = Node->new( name => 'N3' );
 
-# Net::Object::Peer provides an "unsubscribe" event; $n1 will be
+# Net::Object::Peer provides an "unsubscribed" event; $n1 will be
 # notified when $n2 unsubscribes from it
-$n1->subscribe( $n2, 'unsubscribe' );
+$n1->subscribe( $n2, 'unsubscribed' );
 
 # $n2 and $n3 will be notified when $n1 sends a "hey" event, and $n1
 # will be notified that they have subscribed 

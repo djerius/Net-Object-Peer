@@ -12,6 +12,8 @@ use Moo::Role ();
     use Moo;
     with 'Net::Object::Peer';
 
+    sub default_events { qw[ loop ] }
+
     has count => (
         is      => 'rwp',
         default => 0,

@@ -14,6 +14,8 @@ with 'Net::Object::Peer';
 has seen     => ( is => 'ro', default  => sub { {} } );
 has name     => ( is => 'ro', required => 1          );
 
+sub default_events { qw[ signal ] }
+
 # Set high so can verify there is a loop
 class_has
     max_seen => ( is => 'rw', default =>  5          );

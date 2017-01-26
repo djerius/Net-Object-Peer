@@ -15,6 +15,8 @@ has proxy_for => (
     isa      => ConsumerOf ['Net::Object::Peer'],
 );
 
+sub default_events { qw[ A ] }
+
 sub BUILD {
     $_[0]->subscribe( $_[0]->proxy_for, 'B', 'detach' );
 }

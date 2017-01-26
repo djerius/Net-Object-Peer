@@ -21,6 +21,7 @@ use Net::Object::Peer;
     with 'MyTest::Role::Log';
     with 'MyTest::Role::Node';
 
+    sub default_events { qw[ changed echo ] }
 
     sub _cb_changed {
 

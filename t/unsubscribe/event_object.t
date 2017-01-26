@@ -1,3 +1,5 @@
+#! perl
+
 use 5.10.0;
 use strict;
 use warnings;
@@ -19,6 +21,7 @@ use Net::Object::Peer;
     with 'MyTest::Role::Log';
     with 'MyTest::Role::Node';
 
+    sub default_events { qw[ oneshot ] }
 
     # unsubscribe using event object
     sub _cb_oneshot {

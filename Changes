@@ -4,13 +4,23 @@ Revision history for {{$dist->name}}
 
   [API CHANGE]
 
-    * the event emitted when a listener unsubscribes from an emitter
+    * The event emitted when a listener unsubscribes from an emitter
       is now named "unsubscribed" rather than "unsubscribe".
       it indicates a state, not a command to unsubscribe.
 
+  [BEHAVIOR CHANGE]
+
+    * Events which will be emitted *must* be registered, either via the
+      default_events() class method, via the events attribute in the
+      constructor, or via the events() object method.  Subscriptions
+      will fail if the emitter does not produce the event, and
+      attempts to emit an event will fail if the emitter does not
+      produce the event.  The emits_events() method may be used
+      to query an emitter for its events.
+
   [ENHANCEMENT]
 
-    * the prefix for event handler methods may now be specified either
+    * The prefix for event handler methods may now be specified either
       on a per object basis (via the event_handler_prefix) attribute,
       or on a per class basis via the default_event_handler_prefix
       class method.

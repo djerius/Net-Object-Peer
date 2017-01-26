@@ -16,6 +16,8 @@ version 0.06
     
     has name => is => ( 'ro', required => 1 );
     
+    sub default_events { qw[ hey ] }
+    
     sub _notify_subscribed {
         my ( $self, $peer, $name ) = @_;
         say $self->name, ":\t@{[ $peer->name ]} subscribed to event $name";
@@ -27,7 +29,7 @@ version 0.06
           ":\t@{[ $event->emitter->name ]} sent @{[$event->name]}";
     }
     
-    sub _cb_unsubscribe {
+    sub _cb_unsubscribed {
         my ( $self, $event ) = @_;
         say $self->name, ":\t@{[ $event->emitter->name ]} unsubscribed";
     }
@@ -39,9 +41,9 @@ version 0.06
     my $n2 = Node->new( name => 'N2' );
     my $n3 = Node->new( name => 'N3' );
     
-    # Net::Object::Peer provides an "unsubscribe" event; $n1 will be
+    # Net::Object::Peer provides an "unsubscribed" event; $n1 will be
     # notified when $n2 unsubscribes from it
-    $n1->subscribe( $n2, 'unsubscribe' );
+    $n1->subscribe( $n2, 'unsubscribed' );
     
     # $n2 and $n3 will be notified when $n1 sends a "hey" event, and $n1
     # will be notified that they have subscribed 
@@ -61,12 +63,13 @@ version 0.06
 
 Resulting in:
 
-    N2:    N1 subscribed to event unsubscribe
+    N2:    N1 subscribed to event unsubscribed
     N1:    N2 subscribed to event hey
     N1:    N3 subscribed to event hey
     N2:    N1 sent hey
     N3:    N1 sent hey
     N2:    N1 sent hey
+    N1:    N2 unsubscribed
 
 # DESCRIPTION
 
@@ -100,6 +103,26 @@ Here `$n1` _subscribes to_ `$n2`'s `changed` event. By default,
 `changed` event.
 
 ## Events
+
+An emitter must register the events that it will emit.  Here's how
+
+1. Class defaults
+
+    A default set of events for the class may be specified by defining
+    the ["default\_events"](#default_events) class method, which should return a list
+    of event names:
+
+        sub default_events{ qw[ evt1 evt2 evt3 ] }
+
+2. Object defaults
+
+    During object construction, the [events](#new) attribute may be used
+    to specify a list of events.
+
+3. Runtime manipulation
+
+    The ["events"](#events) object method may be used to overwrite the list
+    of events.
 
 When a subscriber recieves an event, its registered handler for that
 event type is invoked.  If the object creating the event used the
@@ -232,6 +255,8 @@ Subscribe to one or more events sent by `$peer`, which must consume
 the [Net::Object::Peer](https://metacpan.org/pod/Net::Object::Peer) role.  If `$peer` additionally consumes the
 [Net::Object::Peer::Ephemeral](https://metacpan.org/pod/Net::Object::Peer::Ephemeral) role, a strong reference to `$peer`
 is stored. (See  ["Translation/Proxy Nodes" in Net::Object::Peer::Cookbook](https://metacpan.org/pod/Net::Object::Peer::Cookbook#Translation-Proxy-Nodes).)
+An attempt to subscribe to an event the peer does not produce will throw
+an exception.
 
 The event name and the action to be performed when the event is
 emitted are specified by a tuple with the following forms:
@@ -332,29 +357,34 @@ arguments are specified, only those which match are returned; see
 
 Broadcast the named event to all subscribed peers.  `%args` contains
 arguments to be passed the the payload class constructor.  The default
-payload class is a [Net::Object::Peer::Event](https://metacpan.org/pod/Net::Object::Peer::Event) object; use the `class` key to
-specify an alternate class, which must be derived from **Net::Object::Peer::Event**.
+payload class is a [Net::Object::Peer::Event](https://metacpan.org/pod/Net::Object::Peer::Event) object; use the
+`class` key to specify an alternate class, which must be derived from
+**Net::Object::Peer::Event**.  An attempt to emit an event which is not
+supported by the emitter will cause an exception to be thrown.
 
 ## send
 
     $self->send( $peer, $event_name, %args );
 
 This is similar to the ["emit"](#emit) method, but only sends the event to the
-specified peer.
+specified peer.  An attempt to emit an event which is not
+supported by the emitter will cause an exception to be thrown.
 
 ## emit\_args
 
     $self->emit_args( $event_name, @args );
 
 Broadcast the named event to all subscribed peers. `@args` will be
-passed directly to each subscriber's callback.
+passed directly to each subscriber's callback.  An attempt to emit an event which is not
+supported by the emitter will cause an exception to be thrown.
 
 ## send\_args
 
     $self->send_args( $peer, $event_name, @args );
 
 This is similar to the ["emit\_args"](#emit_args) method, but only sends the event to the
-specified peer.
+specified peer.  An attempt to emit an event which is not
+supported by the emitter will cause an exception to be thrown.
 
 # AUTHOR
 
