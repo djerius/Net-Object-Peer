@@ -2,6 +2,8 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+0.06      2017-01-26 15:32:21-05:00 America/New_York (TRIAL RELEASE)
+
   [API CHANGE]
 
     * The event emitted when a listener unsubscribes from an emitter
