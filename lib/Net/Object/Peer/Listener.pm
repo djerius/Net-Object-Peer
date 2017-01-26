@@ -11,7 +11,7 @@ use strictures 2;
 use namespace::clean;
 extends 'BeamX::Peer::Listener';
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 has +peer => (
     is  => 'ro',

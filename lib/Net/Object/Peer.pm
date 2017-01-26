@@ -19,7 +19,7 @@ use Moo::Role;
 
 use MooX::ProtectedAttributes;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use Net::Object::Peer::Event;
 use Net::Object::Peer::Types qw[ -all ];

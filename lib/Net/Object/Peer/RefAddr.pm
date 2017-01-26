@@ -3,7 +3,7 @@ package Net::Object::Peer::RefAddr;
 
 use strictures 2;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use Scalar::Util qw[ refaddr ];
 use namespace::clean;
